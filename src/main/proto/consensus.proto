@@ -1,0 +1,172 @@
+syntax = "proto3";
+
+/*
+Model: Fail-Noisy
+
+uc   UniformConsensus        Leader-Driven      5.7  225
+ep   EpochConsensus          Read/Write Epoch   5.6  223
+ec   EpochChange             Leader-Based       5.5  219
+beb  BestEffortBroadcast     Basic              3.1  76
+eld  EventualLeaderDetector  Elect Lower Epoch  2.9  58
+pl   PerfectLink (use TCP)
+*/
+
+message ProcessId {
+    string host = 1; // String containing either domain name or IP (most likely)
+    int32 port = 2;
+    string owner = 3; // Short alias or acronym of the owner of the node
+    int32 index = 4; // Node index within the owner's nodes. Must be 1, 2, or 3
+}
+
+// UC
+message UcInit {
+}
+
+message UcPropose {
+    int32 value = 1;
+}
+
+message EcStartEpoch {
+    int32 newTimestamp = 1;
+    ProcessId newLeader = 2;
+}
+
+message EpAborted {
+    int32 valueTimestamp = 1;
+    int32 value = 2;
+}
+
+message EpPropose {
+    int32 value = 1;
+}
+
+message EpDecide {
+    int32 value = 1;
+}
+
+message UcDecide {
+    int32 value = 1;
+}
+
+// EP
+message EpInit {
+    int32 valueTimestamp = 1;
+    int32 value = 2;
+}
+
+message EpAbort {
+}
+
+message EpRead_ {
+}
+
+message EpState_ {
+    int32 valueTimestamp = 1;
+    int32 value = 2;
+}
+
+message EpWrite_ {
+    int32 value = 1;
+}
+
+message EpAccept_ {
+}
+
+message EpDecided_ {
+    int32 value = 1;
+}
+
+// EC
+message EcInit {
+}
+
+message EcNewEpoch_ {
+    int32 timestamp = 1;
+}
+
+message EcNack_ {
+}
+
+// ELD
+message EldInit {
+}
+
+message EldRecovery {
+}
+
+message EldTrust {
+    ProcessId processId = 1;
+}
+
+message EldHeartbeat_ {
+    int32 epoch = 1;
+}
+
+message Timeout {
+}
+
+// BEB
+message BebBroadcast {
+    Message message = 1;
+}
+
+message BebDeliver {
+    Message message = 1;
+}
+
+// PL
+message PlSend {
+    Message message = 1;
+}
+
+message PlDeliver {
+    Message message = 1;
+}
+
+// Wrapper message
+message Message {
+    enum Type {
+        UC_PROPOSE = 0;
+        EC_START_EPOCH = 1;
+        EP_ABORT = 2;
+        EP_ABORTED = 3;
+        EP_PROPOSE = 4;
+        EP_DECIDE = 5;
+        UC_DECIDE = 6;
+        BEB_BROADCAST = 7;
+        EP_READ_ = 8;
+        EP_STATE_ = 9;
+        EP_WRITE_ = 10;
+        EP_ACCEPT_ = 11;
+        EP_DECIDED_ = 12;
+        EC_NEW_EPOCH_ = 13;
+        EC_NACK_ = 14;
+        ELD_HEARTBEAT_ = 15;
+        VALUE = 16;
+    }
+
+    Type type = 1;
+
+    UcPropose ucPropose = 2;
+    EcStartEpoch ecStartEpoch = 3;
+    EpAbort epAbort = 4;
+    EpAborted epAborted = 5;
+    EpPropose epPropose = 6;
+    EpDecide epDecide = 7;
+    UcDecide ucDecide = 8;
+    BebBroadcast bebBroadcast = 9;
+    EpRead_ epRead_ = 10;
+    EpState_ epState_ = 11;
+    EpWrite_ epWrite_ = 12;
+    EpAccept_ epAccept_ = 13;
+    EpDecided_ epDecided_ = 14;
+    EcNewEpoch_ ecNewEpoch_ = 15;
+    EcNack_ ecNack_ = 16;
+    EldHeartbeat_ eldHeartbeat_ = 17;
+    int32 value = 18;
+}
+
+// 5
+// Message(5)
+// BebBroadcast(Message(5))
+// Message(BebBroadcast(Message(5)))
