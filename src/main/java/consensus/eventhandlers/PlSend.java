@@ -1,17 +1,24 @@
 package consensus.eventhandlers;
 
 import consensus.eventhandlers.AbstractEvent;
+import consensus.protos.Consensus.ProcessId;
+import consensus.protos.Consensus.EldHeartbeat_;
 
 public class PlSend extends AbstractEvent {
 
-    public PlSend() {
+    private ProcessId process;
+    private EldHeartbeat_ eldHeartbeat_;
+
+    public PlSend(ProcessId process, EldHeartbeat_ eldHeartbeat_) {
         this.setName("PlSend");
         this.setCondition(true);
+        this.process = process;
+        this.eldHeartbeat_ = eldHeartbeat_;
     }
 
     @Override
     public void handle() {
-        System.out.println(this.getClass().toString() + ": Handled!");
+
     }
 
     @Override

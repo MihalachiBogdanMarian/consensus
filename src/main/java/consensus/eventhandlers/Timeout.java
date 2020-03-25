@@ -1,15 +1,15 @@
 package consensus.eventhandlers;
 
-public class BebBroadcast extends AbstractEvent {
+public class Timeout extends AbstractEvent {
 
-    public BebBroadcast() {
-        this.setName("BebBroadcast");
+    public Timeout() {
+        this.setName("Timeout");
         this.setCondition(true);
     }
 
     @Override
     public void handle() {
-        System.out.println(this.getClass().toString() + ": Handled!");
+
     }
 
     @Override
