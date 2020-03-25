@@ -1,5 +1,8 @@
+import basics.AddPerson;
 import basics.ListPeople;
-import com.example.tutorial.Consensus.ProcessId;
+import com.example.tutorial.AddressBookProtos.Person;
+import consensus.network.EventsThread;
+import consensus.protos.Consensus.ProcessId;
 import consensus.eventhandlers.*;
 import consensus.eventsqueue.Queue;
 
@@ -8,20 +11,20 @@ import java.util.List;
 
 public class Main {
 
-    public static Queue<AbstractEvent> eventsQueue = new Queue<>();
-    public static List<ProcessId> processes = new ArrayList<>() {{
-        add(ProcessId.newBuilder().setHost("127.0.0.1").setPort(8001).setOwner("Bogdan").setIndex(1).build());
-        add(ProcessId.newBuilder().setHost("127.0.0.1").setPort(8002).setOwner("Bogdan").setIndex(2).build());
-        add(ProcessId.newBuilder().setHost("127.0.0.1").setPort(8003).setOwner("Bogdan").setIndex(3).build());
-        add(ProcessId.newBuilder().setHost("127.0.0.1").setPort(8004).setOwner("Bogdan").setIndex(4).build());
-    }};
+//    public static Queue<AbstractEvent> eventsQueue = new Queue<>();
+//    public static List<ProcessId> processes = new ArrayList<>() {{
+//        add(ProcessId.newBuilder().setHost("127.0.0.1").setPort(8001).setOwner("Bogdan").setIndex(1).build());
+//        add(ProcessId.newBuilder().setHost("127.0.0.1").setPort(8002).setOwner("Bogdan").setIndex(2).build());
+//        add(ProcessId.newBuilder().setHost("127.0.0.1").setPort(8003).setOwner("Bogdan").setIndex(3).build());
+//        add(ProcessId.newBuilder().setHost("127.0.0.1").setPort(8004).setOwner("Bogdan").setIndex(4).build());
+//    }};
 
     public static void main(String[] args) {
 
-        EventsThread eventsThread = new EventsThread("EventsThread");
-        eventsThread.start();
-
-
+//        EventsThread eventsThread = new EventsThread("EventsThread");
+//        eventsThread.start();
+//
+//
 //        eventsQueue.insert(new BebBroadcast());
 //        eventsQueue.insert(new PlSend());
 //        eventsQueue.getHead().getObject().setCondition(false);
@@ -31,8 +34,8 @@ public class Main {
 //            e.printStackTrace();
 //        }
 //        eventsQueue.getHead().getObject().setCondition(true);
-
-
+//
+//
 //        Person john =
 //                Person.newBuilder()
 //                        .setId(1234)
@@ -47,7 +50,7 @@ public class Main {
 //        Person tim =
 //                Person.newBuilder()
 //                        .setId(5678)
-//                        .setName("Tim Main")
+//                        .setName("Tim Pop")
 //                        .setEmail("tmain@example.com")
 //                        .addPhones(
 //                                Person.PhoneNumber.newBuilder()

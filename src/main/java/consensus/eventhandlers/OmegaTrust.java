@@ -1,15 +1,20 @@
 package consensus.eventhandlers;
 
-public class BebBroadcast extends AbstractEvent {
+import consensus.protos.Consensus.ProcessId;
 
-    public BebBroadcast() {
-        this.setName("BebBroadcast");
+public class OmegaTrust extends AbstractEvent {
+
+    private ProcessId leader;
+
+    public OmegaTrust(ProcessId leader) {
+        this.setName("OmegaTrust");
         this.setCondition(true);
+        this.leader = leader;
     }
 
     @Override
     public void handle() {
-        System.out.println(this.getClass().toString() + ": Handled!");
+
     }
 
     @Override

@@ -1,10 +1,11 @@
-import com.example.tutorial.AddressBookProtos.Person;
-import com.example.tutorial.AddressBookProtos.AddressBook;
-import com.example.tutorial.Consensus.ProcessId;
+package consensus.network;
+
+import consensus.protos.Consensus.ProcessId;
 
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -12,11 +13,13 @@ public class ClientThread extends Thread {
 
     private Socket socket;
     private final Server server;
+    private List<OutputStream> clients;
 
-    public ClientThread(Server server, ServerSocket serverSocket, Socket clientSocket) {
+    public ClientThread(Server server, ServerSocket serverSocket, Socket clientSocket, List<OutputStream> clients) {
         this.server = server;
         this.server.setServerSocket(serverSocket);
         this.socket = clientSocket;
+        this.clients = clients;
     }
 
     @Override
@@ -62,7 +65,7 @@ public class ClientThread extends Thread {
         }
     }
 
-    private static byte[] intToBytes(final int data) {
+    protected static byte[] intToBytes(final int data) {
         return new byte[]{
                 (byte) ((data >> 24) & 0xff),
                 (byte) ((data >> 16) & 0xff),
