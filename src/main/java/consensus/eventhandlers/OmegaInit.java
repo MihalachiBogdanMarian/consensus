@@ -1,26 +1,26 @@
 package consensus.eventhandlers;
 
-import consensus.network.Client;
+import consensus.network.process.Process;
+import consensus.utilities.Utilities;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 
 public class OmegaInit extends AbstractEvent {
 
     public OmegaInit() {
         this.setName("OmegaInit");
-        this.setCondition(true);
     }
 
     @Override
     public void handle() {
-        Client.epoch = 0;
-        Client.store(Client.epoch);
-        Client.candidates = new ArrayList<>();
-        Client.eventsQueue.insert(new OmegaRecovery());
+        Process.epoch = 0;
+        Utilities.store(Process.epoch, Process.fileName);
+        Process.candidates = new LinkedList<>();
+        Process.eventsQueue.insert(new OmegaRecovery());
     }
 
     @Override
-    public void match() {
-        System.out.println(this.getClass().toString() + ": It's a match!");
+    public boolean conditionFulfilled() {
+        return true;
     }
 }

@@ -12,8 +12,8 @@ public class Queue<T extends AbstractEvent> {
         this.tail = null;
     }
 
-    public Queue(T object) {
-        this.head = new QueueNode<>(object, null);
+    public Queue(T event) {
+        this.head = new QueueNode<>(event, null);
         this.tail = this.head;
     }
 
@@ -22,8 +22,8 @@ public class Queue<T extends AbstractEvent> {
         this.tail = tail;
     }
 
-    public void insert(T object) {
-        QueueNode<T> queueNode = new QueueNode<>(object, null);
+    public void insert(T event) {
+        QueueNode<T> queueNode = new QueueNode<>(event, null);
         if (!this.isEmpty()) {
             this.tail.setNext(queueNode);
             this.tail = queueNode;
@@ -36,11 +36,11 @@ public class Queue<T extends AbstractEvent> {
     public QueueNode<T> deleteByCondition() {
         QueueNode<T> queueNode = this.head;
         QueueNode<T> previousQueueNode = null;
-        if (queueNode.getObject().getCondition()) {
+        if (queueNode.getEvent().conditionFulfilled()) {
             this.head = this.head.getNext();
             return queueNode;
         } else {
-            while (!queueNode.getObject().getCondition()) {
+            while (!queueNode.getEvent().conditionFulfilled()) {
                 previousQueueNode = queueNode;
                 queueNode = queueNode.getNext();
             }
@@ -59,14 +59,14 @@ public class Queue<T extends AbstractEvent> {
 
     public T readByCondition() {
         QueueNode<T> queueNode = this.head;
-        while (!queueNode.getObject().getCondition()) {
+        while (!queueNode.getEvent().conditionFulfilled()) {
             queueNode = queueNode.getNext();
         }
-        return queueNode.getObject();
+        return queueNode.getEvent();
     }
 
     public T read() {
-        return this.head.getObject();
+        return this.head.getEvent();
     }
 
     public void display() {

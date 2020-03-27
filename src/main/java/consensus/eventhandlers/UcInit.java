@@ -1,30 +1,32 @@
 package consensus.eventhandlers;
 
-import consensus.network.Client;
+import consensus.network.process.Process;
 
 public class UcInit extends AbstractEvent {
 
     public UcInit() {
         this.setName("UcInit");
-        this.setCondition(true);
     }
 
     @Override
     public void handle() {
-        Client.val = 0;
-        Client.proposed = false;
-        Client.decided = false;
+        Process.val = null;
+        Process.proposed = false;
+        Process.decided = false;
 
-        Client.eventsQueue.insert(new EcInit());
+//        Obtain the leader ℓ0 of the initial epoch with timestamp 0 from epoch-change inst. ec;
+//        Initialize a new instance ep.0 of epoch consensus with timestamp 0,
+//                leader ℓ0, and state (0,⊥);
+        Process.eventsQueue.insert(new EcInit());
 
-        Client.ets = 0;
-        Client.l = Client.l0;
-        Client.newts = 0;
-        Client.newl = null;
+        Process.ets = 0;
+        Process.l = Process.l0;
+        Process.newts = 0;
+        Process.newl = null;
     }
 
     @Override
-    public void match() {
-        System.out.println(this.getClass().toString() + ": It's a match!");
+    public boolean conditionFulfilled() {
+        return true;
     }
 }

@@ -6,15 +6,9 @@ public interface Event {
 
     void setName(String name);
 
-    boolean getCondition();
-
-    void setCondition(boolean condition);
+    boolean conditionFulfilled();
 
     default void handle() {
         System.out.println(this.getClass().toString() + ": Handled!");
-    }
-
-    default void match() {
-        System.out.println(this.getClass().toString() + ": It's a match!");
     }
 }

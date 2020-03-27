@@ -1,52 +1,57 @@
 package consensus.eventhandlers;
 
-import consensus.network.Client;
-import consensus.protos.Consensus;
+import consensus.network.process.Process;
+import consensus.protos.Consensus.Message;
 import consensus.protos.Consensus.ProcessId;
 import consensus.protos.Consensus.EldHeartbeat_;
+import consensus.utilities.Utilities;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedList;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class OmegaRecovery extends AbstractEvent {
 
     public OmegaRecovery() {
         this.setName("OmegaRecovery");
-        this.setCondition(true);
     }
 
     @Override
     public void handle() {
-        ProcessId leader = maxrank(Client.processes);
+        Process.l = Utilities.maxrank(Process.processes);
 
-        Client.eventsQueue.insert(new OmegaTrust(leader));
+        Process.eventsQueue.insert(new OmegaTrust(Process.l));
 
-        Client.delay = Client.delta;
+        Process.delay = Process.delta;
 
-        Client.epoch = Client.retrieve();
-        Client.epoch++;
-        Client.store(Client.epoch);
+        Process.epoch = Utilities.retrieve(Process.fileName);
+        Process.epoch++;
+        Utilities.store(Process.epoch, Process.fileName);
 
-        for (ProcessId process : Client.processes) {
-            Client.eventsQueue.insert(new PlSend(process, EldHeartbeat_.newBuilder().setEpoch(Client.epoch).build()));
+        for (ProcessId process : Process.processes) {
+            Process.eventsQueue.insert(
+                    new PlSend(Process.getSelf(), process,
+                            Message.newBuilder().setType(Message.Type.ELD_HEARTBEAT_).setEldHeartbeat(
+                                    EldHeartbeat_.newBuilder().setEpoch(Process.epoch).build()
+                            ).build()));
         }
 
-        Client.candidates = new ArrayList<>();
-        Client.starttimer(Client.delay);
+        Process.candidates = new LinkedList<>();
+        starttimer(Process.delay);
     }
 
     @Override
-    public void match() {
-        System.out.println(this.getClass().toString() + ": It's a match!");
+    public boolean conditionFulfilled() {
+        return true;
     }
 
-    private static ProcessId maxrank(List<ProcessId> processes) {
-        ProcessId maxLeader = processes.get(0);
-        for (ProcessId process : processes) {
-            if (process.getIndex() > maxLeader.getIndex()) {
-                maxLeader = process;
+    private static void starttimer(int delay) {
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                Process.eventsQueue.insert(new Timeout());
             }
-        }
-        return maxLeader;
+        }, delay * 1000);
     }
 }

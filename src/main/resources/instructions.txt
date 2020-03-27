@@ -1,0 +1,5 @@
+protoc -I=C:\Users\BiDi\Documents\IntelliJProjects\consensus\src\main\proto --java_out=C:\Users\BiDi\Documents\IntelliJProjects\consensus\src\main\java C:\Users\BiDi\Documents\IntelliJProjects\consensus\src\main\proto\addressbook.proto
+
+protoc -I=C:\Users\BiDi\Documents\IntelliJProjects\consensus\src\main\proto --java_out=C:\Users\BiDi\Documents\IntelliJProjects\consensus\src\main\java\com\example\tutorial C:\Users\BiDi\Documents\IntelliJProjects\consensus\src\main\proto\consensus.proto
+
+"C:\\Users\\BiDi\\Documents\\IntelliJProjects\\consensus\\src\\main\\resources\\" + fileIndex + ".txt"

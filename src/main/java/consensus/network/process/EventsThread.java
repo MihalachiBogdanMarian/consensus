@@ -1,6 +1,4 @@
-package consensus.network;
-
-import consensus.eventhandlers.AbstractEvent;
+package consensus.network.process;
 
 public class EventsThread implements Runnable {
     private Thread t;
@@ -11,11 +9,11 @@ public class EventsThread implements Runnable {
     }
 
     public void run() {
-//        while (true) {
-//            if (!Client.eventsQueue.isEmpty()) {
-//                Client.eventsQueue.readByCondition().handle();
-//            }
-//        }
+        while (true) {
+            if (!Process.eventsQueue.isEmpty()) {
+                Process.eventsQueue.deleteByCondition().getEvent().handle();
+            }
+        }
     }
 
     public void start() {

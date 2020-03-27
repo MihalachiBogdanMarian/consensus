@@ -3,7 +3,6 @@ package consensus.eventhandlers;
 public class AbstractEvent implements Event {
 
     protected String name;
-    protected boolean condition;
 
     @Override
     public String getName() {
@@ -16,13 +15,8 @@ public class AbstractEvent implements Event {
     }
 
     @Override
-    public boolean getCondition() {
-        return this.condition;
-    }
-
-    @Override
-    public void setCondition(boolean condition) {
-        this.condition = condition;
+    public boolean conditionFulfilled() {
+        return false;
     }
 
     @Override
