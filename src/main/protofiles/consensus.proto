@@ -142,7 +142,6 @@ message Message {
         EC_NEW_EPOCH_ = 13;
         EC_NACK_ = 14;
         ELD_HEARTBEAT_ = 15;
-        VALUE = 16;
     }
 
     Type type = 1;
@@ -163,7 +162,6 @@ message Message {
     EcNewEpoch_ ecNewEpoch_ = 15;
     EcNack_ ecNack_ = 16;
     EldHeartbeat_ eldHeartbeat_ = 17;
-    int32 value = 18;
 }
 
 // 5

@@ -1,13 +1,4 @@
-import basics.AddPerson;
 import basics.ListPeople;
-import com.example.tutorial.AddressBookProtos.Person;
-import consensus.network.EventsThread;
-import consensus.protos.Consensus.ProcessId;
-import consensus.eventhandlers.*;
-import consensus.eventsqueue.Queue;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class Main {
 

@@ -1,19 +1,27 @@
 package consensus.eventhandlers;
 
+import consensus.network.process.Process;
+import consensus.protos.Consensus;
+import consensus.protos.Consensus.Message;
+
 public class BebBroadcast extends AbstractEvent {
 
-    public BebBroadcast() {
+    private Message message;
+
+    public BebBroadcast(Message message) {
         this.setName("BebBroadcast");
-        this.setCondition(true);
+        this.message = message;
     }
 
     @Override
     public void handle() {
-        System.out.println(this.getClass().toString() + ": Handled!");
+        for (Consensus.ProcessId process : Process.processes) {
+            Process.eventsQueue.insert(new PlSend(Process.getSelf(), process, message));
+        }
     }
 
     @Override
-    public void match() {
-        System.out.println(this.getClass().toString() + ": It's a match!");
+    public boolean conditionFulfilled() {
+        return true;
     }
 }

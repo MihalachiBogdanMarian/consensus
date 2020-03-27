@@ -4,25 +4,25 @@ import consensus.eventhandlers.AbstractEvent;
 
 public class QueueNode<T extends AbstractEvent> {
 
-    private T object;
+    private T event;
     private QueueNode<T> next;
 
     public QueueNode() {
-        object = null;
+        event = null;
         next = null;
     }
 
     public QueueNode(T object, QueueNode<T> next) {
-        this.object = object;
+        this.event = object;
         this.next = next;
     }
 
-    public T getObject() {
-        return object;
+    public T getEvent() {
+        return event;
     }
 
-    public void setObject(T object) {
-        this.object = object;
+    public void setEvent(T event) {
+        this.event = event;
     }
 
     public QueueNode<T> getNext() {
