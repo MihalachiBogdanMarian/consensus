@@ -1,5 +1,6 @@
 package consensus.eventhandlers;
 
+import consensus.network.process.EpState;
 import consensus.network.process.Process;
 
 public class UcPropose extends AbstractEvent {
@@ -14,10 +15,9 @@ public class UcPropose extends AbstractEvent {
     @Override
     public void handle() {
         Process.val = v;
-    }
-
-    @Override
-    public boolean conditionFulfilled() {
-        return true;
+        if (Process.l.equals(Process.getSelf()) && Process.val != null && !Process.proposed) {
+            Process.proposed = true;
+            Process.eventsQueue.insert(new EpPropose(Process.ets, Process.l, new EpState(0, null), Process.val));
+        }
     }
 }

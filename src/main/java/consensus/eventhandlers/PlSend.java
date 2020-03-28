@@ -35,9 +35,4 @@ public class PlSend extends AbstractEvent {
             e.printStackTrace();
         }
     }
-
-    @Override
-    public boolean conditionFulfilled() {
-        return true;
-    }
 }

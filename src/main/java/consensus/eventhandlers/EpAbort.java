@@ -1,5 +1,7 @@
 package consensus.eventhandlers;
 
+import consensus.network.process.Process;
+
 public class EpAbort extends AbstractEvent {
 
     private int ts; // instance for this epoch
@@ -11,11 +13,6 @@ public class EpAbort extends AbstractEvent {
 
     @Override
     public void handle() {
-
-    }
-
-    @Override
-    public boolean conditionFulfilled() {
-        return true;
+        Process.eventsQueue.insert(new EpAborted(ts, Process.epInstances.get(ts).getValts(), Process.epInstances.get(ts).getVal()));
     }
 }

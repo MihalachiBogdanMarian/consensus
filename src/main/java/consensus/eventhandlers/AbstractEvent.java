@@ -15,11 +15,6 @@ public class AbstractEvent implements Event {
     }
 
     @Override
-    public boolean conditionFulfilled() {
-        return false;
-    }
-
-    @Override
     public String toString() {
         return "AbstractEvent{" +
                 "name='" + name + '\'' +

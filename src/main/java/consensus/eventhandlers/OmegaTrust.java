@@ -21,18 +21,14 @@ public class OmegaTrust extends AbstractEvent {
         if (process.equals(Process.getSelf())) {
             Process.ts += Process.processes.size();
             Process.eventsQueue.insert(new consensus.eventhandlers.BebBroadcast(
-                    Message.newBuilder().setType(Message.Type.BEB_BROADCAST).
-                            setBebBroadcast(
-                                    BebBroadcast.newBuilder().setMessage(
-                                            Message.newBuilder().setType(Message.Type.EC_NEW_EPOCH_).
-                                                    setEcNewEpoch(EcNewEpoch_.newBuilder().setTimestamp(Process.ts).build()
-                                                    ).build()).build()).build()
+                    Message.newBuilder().setType(Message.Type.BEB_BROADCAST)
+                            .setBebBroadcast(BebBroadcast.newBuilder().setMessage(Message.newBuilder()
+                                            .setType(Message.Type.EC_NEW_EPOCH_)
+                                            .setEcNewEpoch(EcNewEpoch_.newBuilder().setTimestamp(Process.ts).build())
+                                            .build()
+                                    ).build()
+                            ).build()
             ));
         }
-    }
-
-    @Override
-    public boolean conditionFulfilled() {
-        return true;
     }
 }

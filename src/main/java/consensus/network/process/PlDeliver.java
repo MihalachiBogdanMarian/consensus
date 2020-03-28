@@ -1,6 +1,5 @@
 package consensus.network.process;
 
-import consensus.eventhandlers.BebBroadcast;
 import consensus.eventhandlers.BebDeliver;
 import consensus.network.server.ProcessThread;
 import consensus.protos.Consensus;
@@ -50,12 +49,52 @@ public class PlDeliver implements Runnable {
                         if (Process.trusted.equals(Process.getSelf())) {
                             Process.ts += Process.processes.size();
                             Process.eventsQueue.insert(new consensus.eventhandlers.BebBroadcast(
-                                    Message.newBuilder().setType(Message.Type.BEB_BROADCAST).
-                                            setBebBroadcast(
-                                                    Consensus.BebBroadcast.newBuilder().setMessage(
-                                                            Message.newBuilder().setType(Message.Type.EC_NEW_EPOCH_).
-                                                                    setEcNewEpoch(Consensus.EcNewEpoch_.newBuilder().setTimestamp(Process.ts).build()
-                                                                    ).build()).build()).build()
+                                    Message.newBuilder().setType(Message.Type.BEB_BROADCAST)
+                                            .setBebBroadcast(Consensus.BebBroadcast.newBuilder().setMessage(Message.newBuilder()
+                                                            .setType(Message.Type.EC_NEW_EPOCH_)
+                                                            .setEcNewEpoch(Consensus.EcNewEpoch_.newBuilder().setTimestamp(Process.ts).build())
+                                                            .build()
+                                                    ).build()
+                                            ).build()
+                            ));
+                        }
+                        break;
+                    case EP_STATE_:
+                        Process.epInstances.get(Process.ets).getStates().put(processFrom,
+                                new EpState(message.getEpState().getValueTimestamp(), message.getEpState().getValue()));
+                        if (Utilities.hashtag(Process.epInstances.get(Process.ets).getStates()) > Process.processes.size() / 2) {
+                            EpState epState = Utilities.highest(Process.epInstances.get(Process.ets).getStates());
+                            if (epState.getValue() != null) {
+                                Process.epInstances.get(Process.ets).setTmpval(epState.getValue());
+                            }
+                            for (int i = 0; i < Process.processes.size(); i++) {
+                                Process.epInstances.get(Process.ets).getStates().put(Process.processes.get(i), null);
+                            }
+
+                            Process.eventsQueue.insert(new consensus.eventhandlers.BebBroadcast(
+                                    Message.newBuilder().setType(Message.Type.BEB_BROADCAST)
+                                            .setBebBroadcast(Consensus.BebBroadcast.newBuilder().setMessage(Message.newBuilder()
+                                                            .setType(Message.Type.EP_WRITE_)
+                                                            .setEpWrite(Consensus.EpWrite_.newBuilder().setValue(Process.epInstances.get(Process.ets).getTmpval()).build())
+                                                            .build()
+                                                    ).build()
+                                            ).build()
+                            ));
+                        }
+                        break;
+                    case EP_ACCEPT_:
+                        Process.epInstances.get(Process.ets).setAccepted(Process.epInstances.get(Process.ets).getAccepted() + 1);
+                        if (Process.epInstances.get(Process.ets).getAccepted() > Process.processes.size() / 2) {
+                            Process.epInstances.get(Process.ets).setAccepted(0);
+
+                            Process.eventsQueue.insert(new consensus.eventhandlers.BebBroadcast(
+                                    Message.newBuilder().setType(Message.Type.BEB_BROADCAST)
+                                            .setBebBroadcast(Consensus.BebBroadcast.newBuilder().setMessage(Message.newBuilder()
+                                                            .setType(Message.Type.EP_DECIDED_)
+                                                            .setEpDecided(Consensus.EpDecided_.newBuilder().setValue(Process.epInstances.get(Process.ets).getTmpval()).build())
+                                                            .build()
+                                                    ).build()
+                                            ).build()
                             ));
                         }
                         break;

@@ -19,6 +19,7 @@ public class OmegaRecovery extends AbstractEvent {
     @Override
     public void handle() {
         Process.l = Utilities.maxrank(Process.processes);
+        Process.l0 = Process.l;
 
         Process.eventsQueue.insert(new OmegaTrust(Process.l));
 
@@ -31,18 +32,16 @@ public class OmegaRecovery extends AbstractEvent {
         for (ProcessId process : Process.processes) {
             Process.eventsQueue.insert(
                     new PlSend(Process.getSelf(), process,
-                            Message.newBuilder().setType(Message.Type.ELD_HEARTBEAT_).setEldHeartbeat(
-                                    EldHeartbeat_.newBuilder().setEpoch(Process.epoch).build()
-                            ).build()));
+                            Message.newBuilder().setType(Message.Type.ELD_HEARTBEAT_)
+                                    .setEldHeartbeat(EldHeartbeat_.newBuilder()
+                                            .setEpoch(Process.epoch).build())
+                                    .build()
+                    )
+            );
         }
 
         Process.candidates = new LinkedList<>();
         starttimer(Process.delay);
-    }
-
-    @Override
-    public boolean conditionFulfilled() {
-        return true;
     }
 
     private static void starttimer(int delay) {

@@ -5,24 +5,19 @@ import consensus.protos.Consensus.ProcessId;
 
 public class EcStartEpoch extends AbstractEvent {
 
-    private int ts; // newts'
-    private ProcessId process; // newl'
+    private int newtsP; // newts'
+    private ProcessId newlP; // newl'
 
-    public EcStartEpoch(int ts, ProcessId process) {
+    public EcStartEpoch(int newtsP, ProcessId newlP) {
         this.setName("EcStartEpoch");
-        this.ts = ts;
-        this.process = process;
+        this.newtsP = newtsP;
+        this.newlP = newlP;
     }
 
     @Override
     public void handle() {
-        Process.newts = ts;
-        Process.newl = process;
+        Process.newts = newtsP;
+        Process.newl = newlP;
         Process.eventsQueue.insert(new EpAbort(Process.ets));
-    }
-
-    @Override
-    public boolean conditionFulfilled() {
-        return true;
     }
 }
