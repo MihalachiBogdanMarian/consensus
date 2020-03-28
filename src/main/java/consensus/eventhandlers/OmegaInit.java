@@ -18,9 +18,4 @@ public class OmegaInit extends AbstractEvent {
         Process.candidates = new LinkedList<>();
         Process.eventsQueue.insert(new OmegaRecovery());
     }
-
-    @Override
-    public boolean conditionFulfilled() {
-        return true;
-    }
 }

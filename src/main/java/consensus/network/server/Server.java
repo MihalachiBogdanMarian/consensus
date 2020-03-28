@@ -8,6 +8,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Random;
 
 public class Server {
 
@@ -37,8 +38,9 @@ public class Server {
                 System.out.println("A process is connected...");
                 this.setNrProcesses(this.getNrProcesses() + 1);
 
+                Random rand = new Random();
                 processes.put(
-                        ProcessId.newBuilder().setHost(socket.getLocalAddress().toString().split("/")[1]).setPort(socket.getPort()).setOwner("Bogdan").setIndex(this.getNrProcesses()).build(),
+                        ProcessId.newBuilder().setHost(socket.getLocalAddress().toString().split("/")[1]).setPort(socket.getPort()).setOwner("Bogdan").setIndex(rand.nextInt(1000) + 1).build(),
                         new DataOutputStream(socket.getOutputStream())
                 );
 

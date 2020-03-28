@@ -1,13 +1,13 @@
 package consensus.network.process;
 
-import consensus.eventhandlers.PlSend;
-import consensus.protos.Consensus;
-import consensus.protos.Consensus.ProcessId;
-import consensus.eventhandlers.AbstractEvent;
+import consensus.eventhandlers.*;
 import consensus.eventsqueue.Queue;
+import consensus.protos.Consensus.ProcessId;
 import consensus.utilities.Utilities;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.*;
@@ -33,7 +33,7 @@ public class Process {
     public static int lastts; // last epoch that it started
     public static int ts; // timestamp of an epoch at which it tried to be leader
     // EP
-
+    public static Map<Integer, EpInstance> epInstances = new HashMap<>();
     // ELD
     public static int epoch; // current epoch
     public static LinkedList<SimpleEntry<ProcessId, Integer>> candidates;
@@ -67,25 +67,38 @@ public class Process {
         EventsThread eventsThread = new EventsThread("EventsThread");
         eventsThread.start();
 
-
         System.out.println("Waiting from message from server... ");
         // the value I have to propose and all the processes I work with
-        readValueToProposeAndProcesses(socket);
-        fileName = "C:\\Users\\BiDi\\Documents\\IntelliJProjects\\consensus\\src\\main\\resources\\rank" + Utilities.rank(Process.processes, Process.port) + ".txt";
-        l0 = Utilities.maxrank(processes);
+        int v = readValueToProposeAndProcesses(socket);
+        fileName = "C:\\Users\\BiDi\\Documents\\IntelliJProjects\\consensus\\src\\main\\resources\\rank" + Utilities.rank(Process.processes, Process.getSelf()) + ".txt";
+//        l0 = Utilities.maxrank(processes);
 
-        System.out.println(val);
-        for (ProcessId processId : processes) {
-            System.out.println(processId.toString());
-        }
+//        System.out.println(v);
+//        System.out.println();
+//        for (ProcessId processId : processes) {
+//            System.out.println(processId.toString());
+//        }
+//        System.out.println();
 
         // listening for messages from other processes
         PlDeliver plDeliver = new PlDeliver("PlDeliver");
         plDeliver.start();
 
-        while (true) {
+        // start the algorithms
+        eventsQueue.insert(new OmegaInit());
+//        try {
+//            Thread.sleep(100);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+        eventsQueue.insert(new EcInit());
+        eventsQueue.insert(new UcInit());
+        eventsQueue.insert(new EpInit(0, l0, new EpState(0, null)));
+        eventsQueue.insert(new UcPropose(v));
 
-        }
+//        while (true) {
+//
+//        }
     }
 
     public void sendResponseToServer(String request, Socket socket) throws IOException {
@@ -103,11 +116,12 @@ public class Process {
         return scanner.nextLine();
     }
 
-    private static void readValueToProposeAndProcesses(Socket socket) {
+    private static int readValueToProposeAndProcesses(Socket socket) {
+        int v = 0;
         try {
             InputStream in = socket.getInputStream();
 
-            val = Utilities.readMessage(in).getUcPropose().getValue();
+            v = Utilities.readMessage(in).getUcPropose().getValue();
 
             byte[] processesLengthBytes = new byte[Integer.SIZE / Byte.SIZE];
             in.read(processesLengthBytes, 0, Integer.SIZE / Byte.SIZE);
@@ -117,19 +131,7 @@ public class Process {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    private static void starttimer(int delay) {
-        Timer timer = new Timer();
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                Process.eventsQueue.insert(new PlSend(getSelf(), processes.get(1),
-                        Consensus.Message.newBuilder().setType(Consensus.Message.Type.ELD_HEARTBEAT_).setEldHeartbeat(
-                                Consensus.EldHeartbeat_.newBuilder().setEpoch(Process.epoch).build()
-                        ).build()));
-            }
-        }, delay * 1000);
+        return v;
     }
 
     public static ProcessId getSelf() {

@@ -14,11 +14,6 @@ public class EcInit extends AbstractEvent {
         Process.eventsQueue.insert(new OmegaInit());
         Process.trusted = Process.l0;
         Process.lastts = 0;
-        Process.ts = Utilities.rank(Process.processes, Process.port);
-    }
-
-    @Override
-    public boolean conditionFulfilled() {
-        return true;
+        Process.ts = Utilities.rank(Process.processes, Process.getSelf());
     }
 }

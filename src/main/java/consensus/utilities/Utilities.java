@@ -1,5 +1,6 @@
 package consensus.utilities;
 
+import consensus.network.process.EpState;
 import consensus.network.process.Process;
 import consensus.protos.Consensus.ProcessId;
 import consensus.protos.Consensus.Message;
@@ -9,6 +10,7 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 
 public class Utilities {
 
@@ -30,10 +32,10 @@ public class Utilities {
         );
     }
 
-    public static int rank(List<ProcessId> processes, int port) {
-        for (ProcessId processId : processes) {
-            if (processId.getPort() == port) {
-                return processId.getIndex();
+    public static int rank(List<ProcessId> processes, ProcessId process) {
+        for (ProcessId p : processes) {
+            if (p.equals(process)) {
+                return p.getIndex();
             }
         }
         return 0;
@@ -50,13 +52,22 @@ public class Utilities {
     }
 
     public static void store(int value, String filename) {
+        FileWriter fileWriter = null;
         try {
-            FileWriter writer = new FileWriter(filename, false);
-            writer.write(String.valueOf(value));
-        } catch (IOException e) {
+            fileWriter = new FileWriter(filename);
+            fileWriter.write(String.valueOf(value));
+        } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            try {
+                if (fileWriter != null) {
+                    fileWriter.flush();
+                    fileWriter.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
-
     }
 
     public static int retrieve(String filename) {
@@ -122,6 +133,7 @@ public class Utilities {
 
     public static ProcessId select(LinkedList<SimpleEntry<ProcessId, Integer>> candidates) {
         // select the max rank process from the ones with the minimum epoch timestamp
+        // because they were inserted such that it keeps the order, we need to get the first element
         return candidates.get(0).getKey();
     }
 
@@ -157,18 +169,40 @@ public class Utilities {
     }
 
     private static int compareTo(SimpleEntry<ProcessId, Integer> simpleEntry1, SimpleEntry<ProcessId, Integer> simpleEntry2) {
-        if (Utilities.rank(Process.processes, simpleEntry1.getKey().getPort()) == Utilities.rank(Process.processes, simpleEntry2.getKey().getPort())
+        if (Utilities.rank(Process.processes, simpleEntry1.getKey()) == Utilities.rank(Process.processes, simpleEntry2.getKey())
                 && simpleEntry1.getValue() == simpleEntry2.getValue()) {
             return 0;
         } else if ((simpleEntry1.getValue() > simpleEntry2.getValue()) ||
-                (Utilities.rank(Process.processes, simpleEntry1.getKey().getPort()) < Utilities.rank(Process.processes, simpleEntry2.getKey().getPort())
+                (Utilities.rank(Process.processes, simpleEntry1.getKey()) < Utilities.rank(Process.processes, simpleEntry2.getKey())
                         && simpleEntry1.getValue() == simpleEntry2.getValue())) {
             return 1;
         } else if ((simpleEntry1.getValue() < simpleEntry2.getValue()) ||
-                (Utilities.rank(Process.processes, simpleEntry1.getKey().getPort()) > Utilities.rank(Process.processes, simpleEntry2.getKey().getPort())
+                (Utilities.rank(Process.processes, simpleEntry1.getKey()) > Utilities.rank(Process.processes, simpleEntry2.getKey())
                         && simpleEntry1.getValue() == simpleEntry2.getValue())) {
             return -1;
         }
         return 0;
+    }
+
+    public static int hashtag(Map<ProcessId, EpState> states) {
+        int count = 0;
+        for (Map.Entry<ProcessId, EpState> entry : states.entrySet()) {
+            if (entry.getValue() != null) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    public static EpState highest(Map<ProcessId, EpState> states) {
+        EpState epState = new EpState();
+        for (Map.Entry<ProcessId, EpState> entry : states.entrySet()) {
+            if (entry.getValue() != null) {
+                if (entry.getValue().getTimestamp() >= epState.getValue()) {
+                    epState = entry.getValue();
+                }
+            }
+        }
+        return epState;
     }
 }

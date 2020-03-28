@@ -1,5 +1,6 @@
 package consensus.eventhandlers;
 
+import consensus.network.process.EpState;
 import consensus.network.process.Process;
 
 public class EpAborted extends AbstractEvent {
@@ -19,8 +20,14 @@ public class EpAborted extends AbstractEvent {
     public void handle() {
         Process.ets = Process.newts;
         Process.l = Process.newl;
-//        Initialize a new instance ep.ets of epoch consensus with timestamp ets,
-//        leader ℓ, and state state;
+        Process.proposed = false;
+        // initialize a new instance ep.ets of epoch consensus with timestamp ets,
+        // leader ℓ, and state state;
+        Process.eventsQueue.insert(new EpInit(Process.ets, Process.l, new EpState(valts, val)));
+        if (Process.l.equals(Process.getSelf()) && Process.val != null && !Process.proposed) {
+            Process.proposed = true;
+            Process.eventsQueue.insert(new EpPropose(Process.ets, Process.l, new EpState(0, null), Process.val));
+        }
     }
 
     @Override

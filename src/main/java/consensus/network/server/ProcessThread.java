@@ -8,6 +8,7 @@ import consensus.utilities.Utilities;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -34,10 +35,12 @@ public class ProcessThread extends Thread {
 
                 ProcessId processFrom = Utilities.readProcess(in);
                 ProcessId processTo = Utilities.readProcess(in);
+
                 Message message = Utilities.readMessage(in);
 
                 if (message.getType().equals(Message.Type.UC_DECIDE)) {
-                    System.out.println("Process (" + processFrom.getHost() + ", " + processFrom.getPort() + ", " + processFrom.getOwner() + ", " + processFrom.getIndex() + ") has proposed " + message.getUcDecide().getValue());
+                    System.out.println("Process (" + processFrom.getHost() + ", " + processFrom.getPort() + ", " + processFrom.getOwner() + ", " + processFrom.getIndex() +
+                            ") has proposed value: " + message.getUcDecide().getValue());
                     break;
                 }
 
@@ -77,6 +80,8 @@ public class ProcessThread extends Thread {
                                     setValue(Integer.parseInt(stdin.readLine())).build()).build());
 
             out.write(Utilities.intToBytes(Server.processes.size()), 0, Integer.SIZE / Byte.SIZE);
+
+            Server.processes = indexing(Server.processes);
             for (ProcessId processId : Server.processes.keySet()) {
                 Utilities.writeProcess(out, processId);
             }
@@ -97,6 +102,38 @@ public class ProcessThread extends Thread {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private Map<ProcessId, OutputStream> indexing(Map<ProcessId, OutputStream> processes) {
+        Map<ProcessId, OutputStream> processesIndexed = new HashMap<>();
+
+        List<ProcessId> processList = new ArrayList<>(processes.keySet());
+        processList.sort((p1, p2) -> {
+            if (p2.getIndex() < p1.getIndex()) {
+                return 1;
+            } else if (p2.getIndex() > p1.getIndex()) {
+                return -1;
+            } else {
+                return 0;
+            }
+        });
+
+        for (Map.Entry<ProcessId, OutputStream> entry : processes.entrySet()) {
+            ProcessId key = entry.getKey();
+            OutputStream out = entry.getValue();
+            processesIndexed.put(ProcessId.newBuilder().setHost(key.getHost()).setPort(key.getPort()).setOwner(key.getOwner()).setIndex(index(processList, key)).build(), out);
+        }
+
+        return processesIndexed;
+    }
+
+    private int index(List<ProcessId> processList, ProcessId process) {
+        for (int i = 0; i < processList.size(); i++) {
+            if (processList.get(i).equals(process)) {
+                return i + 1;
+            }
+        }
+        return 0;
     }
 
 }

@@ -23,20 +23,14 @@ public class UcDecide extends AbstractEvent {
 
             Utilities.writeProcess(out, Process.getSelf());
             Utilities.writeProcess(out, Process.getSelf());
-            Utilities.writeMessage(out,
-                    Message.newBuilder().
-                            setType(Message.Type.UC_DECIDE).
-                            setUcDecide(Consensus.UcDecide.newBuilder().setValue(v).build())
-                            .build());
+            Utilities.writeMessage(out, Message.newBuilder().
+                    setType(Message.Type.UC_DECIDE).
+                    setUcDecide(Consensus.UcDecide.newBuilder().setValue(v).build())
+                    .build());
 
             out.flush();
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    @Override
-    public boolean conditionFulfilled() {
-        return true;
     }
 }

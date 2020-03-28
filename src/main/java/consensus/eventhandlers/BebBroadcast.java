@@ -19,9 +19,4 @@ public class BebBroadcast extends AbstractEvent {
             Process.eventsQueue.insert(new PlSend(Process.getSelf(), process, message));
         }
     }
-
-    @Override
-    public boolean conditionFulfilled() {
-        return true;
-    }
 }
