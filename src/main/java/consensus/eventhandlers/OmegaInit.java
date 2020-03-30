@@ -13,6 +13,7 @@ public class OmegaInit extends AbstractEvent {
 
     @Override
     public void handle() {
+        this.displayExecution();
         Process.epoch = 0;
         Utilities.store(Process.epoch, Process.fileName);
         Process.candidates = new LinkedList<>();

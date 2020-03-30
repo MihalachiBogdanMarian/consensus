@@ -19,27 +19,29 @@ public class Timeout extends AbstractEvent {
 
     @Override
     public void handle() {
-        ProcessId newLeader = Utilities.select(Process.candidates);
-        if (!newLeader.equals(Process.l)) {
-            Process.delay += Process.delta;
-            Process.l = newLeader;
-            Process.l0 = Process.l;
-            Process.eventsQueue.insert(new OmegaTrust(Process.l));
-        }
+        this.displayExecution();
+        if (!Process.decided) {
+            ProcessId newLeader = Utilities.select(Process.candidates);
+            if (!newLeader.equals(Process.l)) {
+                Process.delay += Process.delta;
+                Process.l = newLeader;
+                Process.eventsQueue.insert(new OmegaTrust(Process.l));
+            }
 
-        for (ProcessId process : Process.processes) {
-            Process.eventsQueue.insert(
-                    new PlSend(Process.getSelf(), process,
-                            Message.newBuilder().setType(Message.Type.ELD_HEARTBEAT_)
-                                    .setEldHeartbeat(EldHeartbeat_.newBuilder()
-                                            .setEpoch(Process.epoch).build())
-                                    .build()
-                    )
-            );
-        }
+            for (ProcessId process : Process.processes) {
+                Process.eventsQueue.insert(
+                        new PlSend(Process.getSelf(), process,
+                                Message.newBuilder().setType(Message.Type.ELD_HEARTBEAT_)
+                                        .setEldHeartbeat(EldHeartbeat_.newBuilder()
+                                                .setEpoch(Process.epoch).build())
+                                        .build()
+                        )
+                );
+            }
 
-        Process.candidates = new LinkedList<>();
-        starttimer(Process.delay);
+            Process.candidates = new LinkedList<>();
+            starttimer(Process.delay);
+        }
     }
 
     private static void starttimer(int delay) {
@@ -49,6 +51,6 @@ public class Timeout extends AbstractEvent {
             public void run() {
                 Process.eventsQueue.insert(new Timeout());
             }
-        }, delay * 1000);
+        }, Process.delta);
     }
 }

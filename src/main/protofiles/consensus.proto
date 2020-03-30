@@ -11,6 +11,9 @@ eld  EventualLeaderDetector  Elect Lower Epoch  2.9  58
 pl   PerfectLink (use TCP)
 */
 
+message End {
+}
+
 message ProcessId {
     string host = 1; // String containing either domain name or IP (most likely)
     int32 port = 2;
@@ -58,22 +61,27 @@ message EpAbort {
 }
 
 message EpRead_ {
+    int32 epTimestamp = 1;
 }
 
 message EpState_ {
     int32 valueTimestamp = 1;
     int32 value = 2;
+    int32 epTimestamp = 3;
 }
 
 message EpWrite_ {
     int32 value = 1;
+    int32 epTimestamp = 2;
 }
 
 message EpAccept_ {
+    int32 epTimestamp = 1;
 }
 
 message EpDecided_ {
     int32 value = 1;
+    int32 epTimestamp = 2;
 }
 
 // EC
@@ -142,6 +150,7 @@ message Message {
         EC_NEW_EPOCH_ = 13;
         EC_NACK_ = 14;
         ELD_HEARTBEAT_ = 15;
+        END = 16;
     }
 
     Type type = 1;
@@ -162,6 +171,7 @@ message Message {
     EcNewEpoch_ ecNewEpoch_ = 15;
     EcNack_ ecNack_ = 16;
     EldHeartbeat_ eldHeartbeat_ = 17;
+    End end = 18;
 }
 
 // 5

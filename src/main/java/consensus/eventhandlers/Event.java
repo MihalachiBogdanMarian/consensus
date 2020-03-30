@@ -17,4 +17,12 @@ public interface Event {
     }
 
     ;
+
+    default void displayExecution() {
+        synchronized (System.out) {
+            System.out.println(this.getName() + " executing...");
+        }
+    }
+
+    ;
 }

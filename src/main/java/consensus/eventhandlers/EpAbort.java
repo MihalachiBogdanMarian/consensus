@@ -13,6 +13,14 @@ public class EpAbort extends AbstractEvent {
 
     @Override
     public void handle() {
+        this.displayExecution();
         Process.eventsQueue.insert(new EpAborted(ts, Process.epInstances.get(ts).getValts(), Process.epInstances.get(ts).getVal()));
+    }
+
+    @Override
+    public void displayExecution() {
+        synchronized (System.out) {
+            System.out.println(super.getName() + "." + ts + " executing...");
+        }
     }
 }

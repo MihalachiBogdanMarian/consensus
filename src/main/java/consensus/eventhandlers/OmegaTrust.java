@@ -17,6 +17,7 @@ public class OmegaTrust extends AbstractEvent {
 
     @Override
     public void handle() {
+        this.displayExecution();
         Process.trusted = process;
         if (process.equals(Process.getSelf())) {
             Process.ts += Process.processes.size();
@@ -29,6 +30,13 @@ public class OmegaTrust extends AbstractEvent {
                                     ).build()
                             ).build()
             ));
+        }
+    }
+
+    @Override
+    public void displayExecution() {
+        synchronized (System.out) {
+            System.out.println(super.getName() + " (Trusted process: " + process.toString().replace("\n", " ") + ") executing...");
         }
     }
 }

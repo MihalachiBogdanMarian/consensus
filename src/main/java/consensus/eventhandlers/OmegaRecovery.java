@@ -18,8 +18,8 @@ public class OmegaRecovery extends AbstractEvent {
 
     @Override
     public void handle() {
+        this.displayExecution();
         Process.l = Utilities.maxrank(Process.processes);
-        Process.l0 = Process.l;
 
         Process.eventsQueue.insert(new OmegaTrust(Process.l));
 
@@ -51,6 +51,6 @@ public class OmegaRecovery extends AbstractEvent {
             public void run() {
                 Process.eventsQueue.insert(new Timeout());
             }
-        }, delay * 1000);
+        }, Process.delta);
     }
 }

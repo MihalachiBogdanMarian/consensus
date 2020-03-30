@@ -24,12 +24,13 @@ public class PlDeliver implements Runnable {
     public void run() {
         InputStream in = null;
         try {
+            in = Process.socket.getInputStream();
             while (true) {
-                in = Process.socket.getInputStream();
-
                 // we received from process processFrom message Message
                 ProcessId processFrom = Utilities.readProcess(in);
                 Message message = Utilities.readMessage(in);
+
+//                this.displayExecution(processFrom, message);
 
                 switch (message.getType()) {
                     case ELD_HEARTBEAT_:
@@ -60,22 +61,24 @@ public class PlDeliver implements Runnable {
                         }
                         break;
                     case EP_STATE_:
-                        Process.epInstances.get(Process.ets).getStates().put(processFrom,
+                        Process.epInstances.get(message.getEpState().getEpTimestamp()).getStates().put(processFrom,
                                 new EpState(message.getEpState().getValueTimestamp(), message.getEpState().getValue()));
-                        if (Utilities.hashtag(Process.epInstances.get(Process.ets).getStates()) > Process.processes.size() / 2) {
-                            EpState epState = Utilities.highest(Process.epInstances.get(Process.ets).getStates());
-                            if (epState.getValue() != null) {
-                                Process.epInstances.get(Process.ets).setTmpval(epState.getValue());
+                        if (Utilities.hashtag(Process.epInstances.get(message.getEpState().getEpTimestamp()).getStates()) > Process.processes.size() / 2) {
+                            EpState epState = Utilities.highest(Process.epInstances.get(message.getEpState().getEpTimestamp()).getStates());
+                            if (epState.getValue() != 0) {
+                                Process.epInstances.get(message.getEpState().getEpTimestamp()).setTmpval(epState.getValue());
                             }
                             for (int i = 0; i < Process.processes.size(); i++) {
-                                Process.epInstances.get(Process.ets).getStates().put(Process.processes.get(i), null);
+                                Process.epInstances.get(message.getEpState().getEpTimestamp()).getStates().put(Process.processes.get(i), null);
                             }
 
                             Process.eventsQueue.insert(new consensus.eventhandlers.BebBroadcast(
                                     Message.newBuilder().setType(Message.Type.BEB_BROADCAST)
                                             .setBebBroadcast(Consensus.BebBroadcast.newBuilder().setMessage(Message.newBuilder()
                                                             .setType(Message.Type.EP_WRITE_)
-                                                            .setEpWrite(Consensus.EpWrite_.newBuilder().setValue(Process.epInstances.get(Process.ets).getTmpval()).build())
+                                                            .setEpWrite(Consensus.EpWrite_.newBuilder()
+                                                                    .setValue(Process.epInstances.get(message.getEpState().getEpTimestamp()).getTmpval())
+                                                                    .setEpTimestamp(message.getEpState().getEpTimestamp()).build())
                                                             .build()
                                                     ).build()
                                             ).build()
@@ -83,20 +86,25 @@ public class PlDeliver implements Runnable {
                         }
                         break;
                     case EP_ACCEPT_:
-                        Process.epInstances.get(Process.ets).setAccepted(Process.epInstances.get(Process.ets).getAccepted() + 1);
-                        if (Process.epInstances.get(Process.ets).getAccepted() > Process.processes.size() / 2) {
-                            Process.epInstances.get(Process.ets).setAccepted(0);
+                        Process.epInstances.get(message.getEpAccept().getEpTimestamp()).setAccepted(Process.epInstances.get(message.getEpAccept().getEpTimestamp()).getAccepted() + 1);
+                        if (Process.epInstances.get(message.getEpAccept().getEpTimestamp()).getAccepted() > Process.processes.size() / 2) {
+                            Process.epInstances.get(message.getEpAccept().getEpTimestamp()).setAccepted(0);
 
                             Process.eventsQueue.insert(new consensus.eventhandlers.BebBroadcast(
                                     Message.newBuilder().setType(Message.Type.BEB_BROADCAST)
                                             .setBebBroadcast(Consensus.BebBroadcast.newBuilder().setMessage(Message.newBuilder()
                                                             .setType(Message.Type.EP_DECIDED_)
-                                                            .setEpDecided(Consensus.EpDecided_.newBuilder().setValue(Process.epInstances.get(Process.ets).getTmpval()).build())
+                                                            .setEpDecided(Consensus.EpDecided_.newBuilder()
+                                                                    .setValue(Process.epInstances.get(message.getEpAccept().getEpTimestamp()).getTmpval())
+                                                                    .setEpTimestamp(message.getEpAccept().getEpTimestamp()).build())
                                                             .build()
                                                     ).build()
                                             ).build()
                             ));
                         }
+                        break;
+                    case END:
+                        Process.runForever = false;
                         break;
                     default:
                         break;
@@ -119,6 +127,13 @@ public class PlDeliver implements Runnable {
         if (t == null) {
             t = new Thread(this, threadName);
             t.start();
+        }
+    }
+
+    public void displayExecution(ProcessId processFrom, Message message) {
+        synchronized (System.out) {
+            System.out.println("PlDeliver (From: " + processFrom.toString().replace("\n", " ")
+                    + ", Message: " + message.toString().replace("\n", " ") + ") executing...");
         }
     }
 }

@@ -20,11 +20,12 @@ public class BebDeliver extends AbstractEvent {
 
     @Override
     public void handle() {
+        this.displayExecution();
         switch (message.getType()) {
             case EC_NEW_EPOCH_:
-                if (processFrom.equals(Process.trusted) && Process.newts > Process.lastts) {
-                    Process.lastts = Process.newts;
-                    Process.eventsQueue.insert(new EcStartEpoch(Process.newts, Process.l));
+                if (processFrom.equals(Process.trusted) && message.getEcNewEpoch().getTimestamp() > Process.lastts) {
+                    Process.lastts = message.getEcNewEpoch().getTimestamp();
+                    Process.eventsQueue.insert(new EcStartEpoch(message.getEcNewEpoch().getTimestamp(), processFrom));
                 } else {
                     Process.eventsQueue.insert(new PlSend(Process.getSelf(), processFrom,
                             Message.newBuilder().setType(Message.Type.EC_NACK_).setEcNack(EcNack_.newBuilder().build()).build()));
@@ -34,23 +35,32 @@ public class BebDeliver extends AbstractEvent {
                 Process.eventsQueue.insert(new PlSend(Process.getSelf(), processFrom,
                         Message.newBuilder().setType(Message.Type.EP_STATE_)
                                 .setEpState(EpState_.newBuilder()
-                                        .setValueTimestamp(Process.epInstances.get(Process.ets).getValts())
-                                        .setValue(Process.epInstances.get(Process.ets).getVal()).build())
+                                        .setValueTimestamp(Process.epInstances.get(message.getEpRead().getEpTimestamp()).getValts())
+                                        .setValue(Process.epInstances.get(message.getEpRead().getEpTimestamp()).getVal())
+                                        .setEpTimestamp(message.getEpRead().getEpTimestamp()).build())
                                 .build()));
                 break;
             case EP_WRITE_:
-                Process.epInstances.get(Process.ets).setValts(Process.ets);
-                Process.epInstances.get(Process.ets).setVal(message.getEpWrite().getValue());
+                Process.epInstances.get(message.getEpWrite().getEpTimestamp()).setValts(message.getEpWrite().getEpTimestamp());
+                Process.epInstances.get(message.getEpWrite().getEpTimestamp()).setVal(message.getEpWrite().getValue());
                 Process.eventsQueue.insert(new PlSend(Process.getSelf(), processFrom,
                         Message.newBuilder().setType(Message.Type.EP_ACCEPT_)
-                                .setEpAccept(EpAccept_.newBuilder().build())
+                                .setEpAccept(EpAccept_.newBuilder().setEpTimestamp(message.getEpWrite().getEpTimestamp()).build())
                                 .build()));
                 break;
             case EP_DECIDED_:
-                Process.eventsQueue.insert(new EpDecide(Process.ets, message.getEpDecided().getValue()));
+                Process.eventsQueue.insert(new EpDecide(message.getEpDecided().getEpTimestamp(), message.getEpDecided().getValue()));
                 break;
             default:
                 break;
+        }
+    }
+
+    @Override
+    public void displayExecution() {
+        synchronized (System.out) {
+            System.out.println(super.getName() + " (From: " + processFrom.toString().replace("\n", " ")
+                    + ", Message: " + message.toString().replace("\n", " ") + ") executing...");
         }
     }
 }
