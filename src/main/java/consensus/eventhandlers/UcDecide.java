@@ -1,5 +1,6 @@
 package consensus.eventhandlers;
 
+import consensus.eventsqueue.Queue;
 import consensus.network.process.Process;
 import consensus.protos.Consensus;
 import consensus.protos.Consensus.Message;
@@ -9,6 +10,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 public class UcDecide extends AbstractEvent {
+
     private int v; // value
 
     public UcDecide(int v) {
@@ -18,6 +20,7 @@ public class UcDecide extends AbstractEvent {
 
     @Override
     public void handle() {
+        this.displayExecution();
         try {
             OutputStream out = Process.socket.getOutputStream();
 
@@ -29,8 +32,17 @@ public class UcDecide extends AbstractEvent {
                     .build());
 
             out.flush();
+
+            Process.eventsQueue = new Queue<>(); // deplete the events queue
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void displayExecution() {
+        synchronized (System.out) {
+            System.out.println(super.getName() + " (Value: " + v + ") executing...");
         }
     }
 }

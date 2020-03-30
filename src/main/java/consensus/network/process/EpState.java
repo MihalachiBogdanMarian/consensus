@@ -6,8 +6,8 @@ public class EpState {
     private Integer value;
 
     public EpState() {
-        this.timestamp = null;
-        this.value = null;
+        this.timestamp = -1;
+        this.value = 0;
     }
 
     public EpState(Integer ts, Integer v) {

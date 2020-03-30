@@ -11,7 +11,7 @@ public class EcInit extends AbstractEvent {
 
     @Override
     public void handle() {
-        Process.eventsQueue.insert(new OmegaInit());
+        this.displayExecution();
         Process.trusted = Process.l0;
         Process.lastts = 0;
         Process.ts = Utilities.rank(Process.processes, Process.getSelf());

@@ -14,10 +14,18 @@ public class UcPropose extends AbstractEvent {
 
     @Override
     public void handle() {
+        this.displayExecution();
         Process.val = v;
-        if (Process.l.equals(Process.getSelf()) && Process.val != null && !Process.proposed) {
+        if (Process.l.equals(Process.getSelf()) && Process.val != 0 && !Process.proposed) {
             Process.proposed = true;
             Process.eventsQueue.insert(new EpPropose(Process.ets, Process.l, new EpState(0, null), Process.val));
+        }
+    }
+
+    @Override
+    public void displayExecution() {
+        synchronized (System.out) {
+            System.out.println(super.getName() + " (Value: " + v + ") executing...");
         }
     }
 }

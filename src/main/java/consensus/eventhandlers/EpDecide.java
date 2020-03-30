@@ -15,6 +15,7 @@ public class EpDecide extends AbstractEvent {
 
     @Override
     public void handle() {
+        this.displayExecution();
         if (!Process.decided) {
             Process.decided = true;
             Process.eventsQueue.insert(new UcDecide(v));
@@ -24,5 +25,12 @@ public class EpDecide extends AbstractEvent {
     @Override
     public boolean conditionFulfilled() {
         return ts == Process.ets;
+    }
+
+    @Override
+    public void displayExecution() {
+        synchronized (System.out) {
+            System.out.println(super.getName() + "." + ts + " (Value: " + v + ") executing...");
+        }
     }
 }

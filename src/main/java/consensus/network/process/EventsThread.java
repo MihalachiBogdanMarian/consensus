@@ -1,5 +1,7 @@
 package consensus.network.process;
 
+import consensus.eventsqueue.QueueNode;
+
 public class EventsThread implements Runnable {
     private Thread t;
     private String threadName;
@@ -11,7 +13,10 @@ public class EventsThread implements Runnable {
     public void run() {
         while (true) {
             if (!Process.eventsQueue.isEmpty()) {
-                Process.eventsQueue.deleteByCondition().getEvent().handle();
+                QueueNode currentEvent = Process.eventsQueue.deleteByCondition();
+                if (currentEvent != null) {
+                    currentEvent.getEvent().handle();
+                }
             }
         }
     }

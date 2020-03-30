@@ -6,13 +6,13 @@ import consensus.utilities.Utilities;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
 public class Server {
 
-    protected static Map<ProcessId, OutputStream> processes = new LinkedHashMap<>(); // process id <-> process output stream
+    protected static Map<ProcessId, OutputStream> processes = new HashMap<>(); // process id <-> process output stream
 
     private static final int PORT = 8100;
     private ServerSocket serverSocket;
@@ -33,6 +33,7 @@ public class Server {
     public void waitForProcesses() throws IOException {
         try {
             while (running) {
+
                 System.out.println("Waiting for a process...");
                 Socket socket = getServerSocket().accept();
                 System.out.println("A process is connected...");

@@ -15,8 +15,16 @@ public class BebBroadcast extends AbstractEvent {
 
     @Override
     public void handle() {
+        this.displayExecution();
         for (Consensus.ProcessId process : Process.processes) {
             Process.eventsQueue.insert(new PlSend(Process.getSelf(), process, message));
+        }
+    }
+
+    @Override
+    public void displayExecution() {
+        synchronized (System.out) {
+            System.out.println(super.getName() + " (Message: " + message.toString().replace("\n", " ") + ") executing...");
         }
     }
 }

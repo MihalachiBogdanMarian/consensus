@@ -19,6 +19,7 @@ public class Process {
     public static List<ProcessId> processes = new LinkedList<>();
     public static int port;
     public static String fileName = "";
+    public static boolean runForever = true;
     // UC
     public static Integer val;
     public static boolean proposed;
@@ -35,10 +36,10 @@ public class Process {
     // EP
     public static Map<Integer, EpInstance> epInstances = new HashMap<>();
     // ELD
-    public static int epoch; // current epoch
+    public static int epoch; // how many times the process crashed and recovered
     public static LinkedList<SimpleEntry<ProcessId, Integer>> candidates;
     public static int delay;
-    public final static int delta = 10;
+    public final static int delta = 1000; // milliseconds
 
 
     private final static String SERVER_ADDRESS = "127.0.0.1";
@@ -71,34 +72,31 @@ public class Process {
         // the value I have to propose and all the processes I work with
         int v = readValueToProposeAndProcesses(socket);
         fileName = "C:\\Users\\BiDi\\Documents\\IntelliJProjects\\consensus\\src\\main\\resources\\rank" + Utilities.rank(Process.processes, Process.getSelf()) + ".txt";
-//        l0 = Utilities.maxrank(processes);
+        l0 = Utilities.maxrank(processes);
+        l = l0;
 
-//        System.out.println(v);
-//        System.out.println();
-//        for (ProcessId processId : processes) {
-//            System.out.println(processId.toString());
-//        }
-//        System.out.println();
+        System.out.println(v);
+        System.out.println();
+        for (ProcessId processId : processes) {
+            System.out.println(processId.toString());
+        }
+        System.out.println();
 
         // listening for messages from other processes
         PlDeliver plDeliver = new PlDeliver("PlDeliver");
         plDeliver.start();
 
         // start the algorithms
-        eventsQueue.insert(new OmegaInit());
-//        try {
-//            Thread.sleep(100);
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
         eventsQueue.insert(new EcInit());
+        eventsQueue.insert(new OmegaInit());
         eventsQueue.insert(new UcInit());
-        eventsQueue.insert(new EpInit(0, l0, new EpState(0, null)));
         eventsQueue.insert(new UcPropose(v));
 
-//        while (true) {
-//
-//        }
+        while (true) {
+            if (!runForever) {
+                break;
+            }
+        }
     }
 
     public void sendResponseToServer(String request, Socket socket) throws IOException {

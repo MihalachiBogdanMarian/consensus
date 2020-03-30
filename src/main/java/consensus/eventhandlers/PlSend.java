@@ -23,6 +23,7 @@ public class PlSend extends AbstractEvent {
 
     @Override
     public void handle() {
+        this.displayExecution();
         try {
             OutputStream out = Process.socket.getOutputStream();
 
@@ -33,6 +34,15 @@ public class PlSend extends AbstractEvent {
             out.flush();
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void displayExecution() {
+        synchronized (System.out) {
+            System.out.println(super.getName() + " (From: " + processFrom.toString().replace("\n", " ")
+                    + ", To: " + processTo.toString().replace("\n", " ")
+                    + ", Message: " + message.toString().replace("\n", " ") + ") executing...");
         }
     }
 }

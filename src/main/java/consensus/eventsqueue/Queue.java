@@ -43,6 +43,9 @@ public class Queue<T extends AbstractEvent> {
             while (!queueNode.getEvent().conditionFulfilled()) {
                 previousQueueNode = queueNode;
                 queueNode = queueNode.getNext();
+                if (queueNode == null) {
+                    return null;
+                }
             }
             assert previousQueueNode != null;
             previousQueueNode.setNext(queueNode.getNext());

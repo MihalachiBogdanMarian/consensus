@@ -97,9 +97,9 @@ public class Utilities {
 
     public static void writeMessage(OutputStream out, Message message) {
         try {
-            byte[] processIdBytes = message.toByteArray();
-            out.write(intToBytes(processIdBytes.length), 0, Integer.SIZE / Byte.SIZE);
-            out.write(processIdBytes, 0, processIdBytes.length);
+            byte[] messageBytes = message.toByteArray();
+            out.write(intToBytes(messageBytes.length), 0, Integer.SIZE / Byte.SIZE);
+            out.write(messageBytes, 0, messageBytes.length);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -198,7 +198,7 @@ public class Utilities {
         EpState epState = new EpState();
         for (Map.Entry<ProcessId, EpState> entry : states.entrySet()) {
             if (entry.getValue() != null) {
-                if (entry.getValue().getTimestamp() >= epState.getValue()) {
+                if (entry.getValue().getTimestamp() >= epState.getTimestamp()) {
                     epState = entry.getValue();
                 }
             }

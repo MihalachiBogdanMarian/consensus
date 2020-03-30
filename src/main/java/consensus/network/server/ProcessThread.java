@@ -30,17 +30,19 @@ public class ProcessThread extends Thread {
         try {
             sendValueToProposeAndProcesses();
 
+            in = socket.getInputStream();
             while (true) {
-                in = socket.getInputStream();
 
                 ProcessId processFrom = Utilities.readProcess(in);
                 ProcessId processTo = Utilities.readProcess(in);
 
                 Message message = Utilities.readMessage(in);
 
+//                System.out.println("Sending (From: " + processFrom.toString().replace("\n", " ") + ", To: " + processTo.toString().replace("\n", " ") + ", Message: " + message.toString().replace("\n", " ") + ") ...");
+
                 if (message.getType().equals(Message.Type.UC_DECIDE)) {
                     System.out.println("Process (" + processFrom.getHost() + ", " + processFrom.getPort() + ", " + processFrom.getOwner() + ", " + processFrom.getIndex() +
-                            ") has proposed value: " + message.getUcDecide().getValue());
+                            ") has decided value: " + message.getUcDecide().getValue());
                     break;
                 }
 
@@ -53,6 +55,9 @@ public class ProcessThread extends Thread {
                 socket.close();
             }
             if (server.getNrProcesses() == 0) {
+                for (Map.Entry<ProcessId, OutputStream> entry : Server.processes.entrySet()) {
+                    sendMessageToProcess(entry.getKey(), entry.getKey(), Message.newBuilder().setType(Message.Type.END).setEnd(Consensus.End.newBuilder().build()).build());
+                }
                 socket.close();
                 server.stop();
             }
@@ -74,10 +79,11 @@ public class ProcessThread extends Thread {
 
             BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
             System.out.print("Enter value to be proposed: ");
+            int value = Integer.parseInt(stdin.readLine());
             Utilities.writeMessage(out,
                     Message.newBuilder().setType(Message.Type.UC_PROPOSE)
                             .setUcPropose(Consensus.UcPropose.newBuilder().
-                                    setValue(Integer.parseInt(stdin.readLine())).build()).build());
+                                    setValue(value).build()).build());
 
             out.write(Utilities.intToBytes(Server.processes.size()), 0, Integer.SIZE / Byte.SIZE);
 

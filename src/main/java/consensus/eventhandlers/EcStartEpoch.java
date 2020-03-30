@@ -16,8 +16,16 @@ public class EcStartEpoch extends AbstractEvent {
 
     @Override
     public void handle() {
+        this.displayExecution();
         Process.newts = newtsP;
         Process.newl = newlP;
         Process.eventsQueue.insert(new EpAbort(Process.ets));
+    }
+
+    @Override
+    public void displayExecution() {
+        synchronized (System.out) {
+            System.out.println(super.getName() + " (New timestamp: " + newtsP + ", New leader: " + newlP.toString().replace("\n", " ") + ") executing...");
+        }
     }
 }
