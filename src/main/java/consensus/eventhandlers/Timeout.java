@@ -20,28 +20,27 @@ public class Timeout extends AbstractEvent {
     @Override
     public void handle() {
         this.displayExecution();
-        if (!Process.decided) {
-            ProcessId newLeader = Utilities.select(Process.candidates);
-            if (!newLeader.equals(Process.l)) {
-                Process.delay += Process.delta;
-                Process.l = newLeader;
-                Process.eventsQueue.insert(new OmegaTrust(Process.l));
-            }
 
-            for (ProcessId process : Process.processes) {
-                Process.eventsQueue.insert(
-                        new PlSend(Process.getSelf(), process,
-                                Message.newBuilder().setType(Message.Type.ELD_HEARTBEAT_)
-                                        .setEldHeartbeat(EldHeartbeat_.newBuilder()
-                                                .setEpoch(Process.epoch).build())
-                                        .build()
-                        )
-                );
-            }
-
-            Process.candidates = new LinkedList<>();
-            starttimer(Process.delay);
+        ProcessId newLeader = Utilities.select(Process.candidates);
+        if (newLeader != null && !newLeader.equals(Process.l)) {
+            Process.delay += Process.delta;
+            Process.l = newLeader;
+            Process.eventsQueue.insert(new OmegaTrust(Process.l));
         }
+
+        for (ProcessId process : Process.processes) {
+            Process.eventsQueue.insert(
+                    new PlSend(Process.getSelf(), process,
+                            Message.newBuilder().setType(Message.Type.ELD_HEARTBEAT_)
+                                    .setEldHeartbeat(EldHeartbeat_.newBuilder()
+                                            .setEpoch(Process.epoch).build())
+                                    .build()
+                    )
+            );
+        }
+
+        Process.candidates = new LinkedList<>();
+        starttimer(Process.delay);
     }
 
     private static void starttimer(int delay) {

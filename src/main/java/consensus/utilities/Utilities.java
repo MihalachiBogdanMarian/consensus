@@ -134,6 +134,9 @@ public class Utilities {
     public static ProcessId select(LinkedList<SimpleEntry<ProcessId, Integer>> candidates) {
         // select the max rank process from the ones with the minimum epoch timestamp
         // because they were inserted such that it keeps the order, we need to get the first element
+        if (candidates.isEmpty()) {
+            return null;
+        }
         return candidates.get(0).getKey();
     }
 

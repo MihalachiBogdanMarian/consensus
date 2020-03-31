@@ -36,7 +36,7 @@ public class OmegaTrust extends AbstractEvent {
     @Override
     public void displayExecution() {
         synchronized (System.out) {
-            System.out.println(super.getName() + " (Trusted process: " + process.toString().replace("\n", " ") + ") executing...");
+            System.out.println(super.getName() + " (Trusted process: " + process.getIndex() + ") executing...");
         }
     }
 }

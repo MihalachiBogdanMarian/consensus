@@ -43,28 +43,32 @@ public class ProcessThread extends Thread {
                 if (message.getType().equals(Message.Type.UC_DECIDE)) {
                     System.out.println("Process (" + processFrom.getHost() + ", " + processFrom.getPort() + ", " + processFrom.getOwner() + ", " + processFrom.getIndex() +
                             ") has decided value: " + message.getUcDecide().getValue());
-                    Server.nrValuesDecided++;
-                    if (Server.nrValuesDecided == Server.processes.size()) {
-                        if (!Server.endSent) {
-                            for (Map.Entry<ProcessId, OutputStream> entry : Server.processes.entrySet()) {
-                                OutputStream out = entry.getValue();
-                                Utilities.writeProcess(out, entry.getKey());
-                                Utilities.writeMessage(out, Message.newBuilder().setType(Message.Type.END).setEnd(Consensus.End.newBuilder().build()).build());
-                                out.flush();
-                            }
-                            Server.endSent = true;
-                        }
-                        break;
-                    }
+//                    Server.nrValuesDecided++;
+//                    if (Server.nrValuesDecided == Server.processes.size()) {
+//                        if (!Server.endSent) {
+//                            for (Map.Entry<ProcessId, OutputStream> entry : Server.processes.entrySet()) {
+//                                OutputStream out = entry.getValue();
+//                                Utilities.writeProcess(out, entry.getKey());
+//                                Utilities.writeMessage(out, Message.newBuilder().setType(Message.Type.END).setEnd(Consensus.End.newBuilder().build()).build());
+//                                out.flush();
+//                            }
+//                            Server.endSent = true;
+//                        }
+//                        break;
+//                    }
                 } else {
-                    if (Server.nrValuesDecided == 0) {
-                        synchronized (Server.processes) {
-                            sendMessageToProcess(processFrom, processTo, message);
-                        }
+//                    if (Server.nrValuesDecided == 0) {
+                    synchronized (Server.processes) {
+                        sendMessageToProcess(processFrom, processTo, message);
+//                        }
                     }
                 }
 
-                if (Server.nrValuesDecided == Server.processes.size()) {
+//                if (Server.nrValuesDecided == Server.processes.size()) {
+//                    break;
+//                }
+
+                if (false) {
                     break;
                 }
             }
