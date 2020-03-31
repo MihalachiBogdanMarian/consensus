@@ -40,8 +40,8 @@ public class PlSend extends AbstractEvent {
     @Override
     public void displayExecution() {
         synchronized (System.out) {
-            System.out.println(super.getName() + " (From: " + processFrom.toString().replace("\n", " ")
-                    + ", To: " + processTo.toString().replace("\n", " ")
+            System.out.println(super.getName() + " (From: " + processFrom.getIndex()
+                    + ", To: " + processTo.getIndex()
                     + ", Message: " + message.toString().replace("\n", " ") + ") executing...");
         }
     }

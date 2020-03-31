@@ -39,7 +39,7 @@ public class EpInit extends AbstractEvent {
     @Override
     public void displayExecution() {
         synchronized (System.out) {
-            System.out.println(super.getName() + "." + ts + " (Process: " + l.toString().replace("\n", " ")
+            System.out.println(super.getName() + "." + ts + " (Process: " + l.getIndex()
                     + ", " + "State(" + state.getTimestamp() + ", " + state.getValue() + ")) executing...");
         }
     }

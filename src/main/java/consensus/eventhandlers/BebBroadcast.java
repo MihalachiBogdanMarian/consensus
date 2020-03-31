@@ -1,7 +1,7 @@
 package consensus.eventhandlers;
 
 import consensus.network.process.Process;
-import consensus.protos.Consensus;
+import consensus.protos.Consensus.ProcessId;
 import consensus.protos.Consensus.Message;
 
 public class BebBroadcast extends AbstractEvent {
@@ -16,7 +16,7 @@ public class BebBroadcast extends AbstractEvent {
     @Override
     public void handle() {
         this.displayExecution();
-        for (Consensus.ProcessId process : Process.processes) {
+        for (ProcessId process : Process.processes) {
             Process.eventsQueue.insert(new PlSend(Process.getSelf(), process, message));
         }
     }

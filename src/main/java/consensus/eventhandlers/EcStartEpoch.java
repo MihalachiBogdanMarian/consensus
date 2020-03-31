@@ -25,7 +25,7 @@ public class EcStartEpoch extends AbstractEvent {
     @Override
     public void displayExecution() {
         synchronized (System.out) {
-            System.out.println(super.getName() + " (New timestamp: " + newtsP + ", New leader: " + newlP.toString().replace("\n", " ") + ") executing...");
+            System.out.println(super.getName() + " (New timestamp: " + newtsP + ", New leader: " + newlP.getIndex() + ") executing...");
         }
     }
 }

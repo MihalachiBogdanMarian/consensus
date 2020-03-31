@@ -30,7 +30,7 @@ public class PlDeliver extends Thread {
                 ProcessId processFrom = Utilities.readProcess(in);
                 Message message = Utilities.readMessage(in);
 
-//                this.displayExecution(processFrom, message);
+                this.displayExecution(processFrom, message);
 
                 switch (message.getType()) {
                     case ELD_HEARTBEAT_:
@@ -111,9 +111,9 @@ public class PlDeliver extends Thread {
                         break;
                 }
 
-                if (!Process.runForever) {
-                    break;
-                }
+//                if (!Process.runForever) {
+//                    break;
+//                }
             }
         } catch (
                 IOException ex) {
@@ -137,7 +137,7 @@ public class PlDeliver extends Thread {
 
     public void displayExecution(ProcessId processFrom, Message message) {
         synchronized (System.out) {
-            System.out.println("PlDeliver (From: " + processFrom.toString().replace("\n", " ")
+            System.out.println("PlDeliver (From: " + processFrom.getIndex()
                     + ", Message: " + message.toString().replace("\n", " ") + ") executing...");
         }
     }

@@ -72,12 +72,13 @@ public class BebDeliver extends AbstractEvent {
         } else {
             return true;
         }
+//        return true;
     }
 
     @Override
     public void displayExecution() {
         synchronized (System.out) {
-            System.out.println(super.getName() + " (From: " + processFrom.toString().replace("\n", " ")
+            System.out.println(super.getName() + " (From: " + processFrom.getIndex()
                     + ", Message: " + message.toString().replace("\n", " ") + ") executing...");
         }
     }

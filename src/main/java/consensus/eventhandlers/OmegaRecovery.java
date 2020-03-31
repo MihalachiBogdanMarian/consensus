@@ -42,6 +42,14 @@ public class OmegaRecovery extends AbstractEvent {
 
         Process.candidates = new LinkedList<>();
         starttimer(Process.delay);
+
+        if (Process.getSelf().equals(Process.l)) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private static void starttimer(int delay) {

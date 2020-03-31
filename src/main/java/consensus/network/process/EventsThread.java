@@ -19,11 +19,11 @@ public class EventsThread extends Thread {
                 }
             }
 
-            if (!Process.runForever) {
-                break;
-            }
+//            if (!Process.runForever) {
+//                break;
+//            }
         }
-        System.exit(0);
+//        System.exit(0);
     }
 
     public void start() {

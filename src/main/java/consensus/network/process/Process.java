@@ -34,7 +34,7 @@ public class Process {
     public static int lastts = 0; // last epoch that it started
     public static int ts = Utilities.rank(Process.processes, Process.getSelf()); // timestamp of an epoch at which it tried to be leader
     // EP
-    public static Map<Integer, EpInstance> epInstances = new HashMap<>();
+    public static Map<Integer, EpInstance> epInstances = new LinkedHashMap<>();
     // ELD
     public static int epoch = 0; // how many times the process crashed and recovered
     public static LinkedList<SimpleEntry<ProcessId, Integer>> candidates = new LinkedList<>();;
@@ -75,6 +75,7 @@ public class Process {
         l0 = Utilities.maxrank(processes);
         l = l0;
 
+        System.out.println("Process " + Process.getSelf().getIndex());
         System.out.println(v);
         System.out.println();
         for (ProcessId processId : processes) {
