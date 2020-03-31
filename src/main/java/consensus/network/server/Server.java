@@ -13,6 +13,8 @@ import java.util.Random;
 public class Server {
 
     protected static Map<ProcessId, OutputStream> processes = new HashMap<>(); // process id <-> process output stream
+    protected static int nrValuesDecided = 0;
+    protected static boolean endSent = false;
 
     private static final int PORT = 8100;
     private ServerSocket serverSocket;

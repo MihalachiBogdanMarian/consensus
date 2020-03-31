@@ -16,10 +16,11 @@ public class UcPropose extends AbstractEvent {
     public void handle() {
         this.displayExecution();
         Process.val = v;
-        if (Process.l.equals(Process.getSelf()) && Process.val != 0 && !Process.proposed) {
-            Process.proposed = true;
-            Process.eventsQueue.insert(new EpPropose(Process.ets, Process.l, new EpState(0, null), Process.val));
-        }
+
+//        if (Process.l.equals(Process.getSelf()) && Process.val != 0 && !Process.proposed) {
+//            Process.proposed = true;
+//            Process.eventsQueue.insert(new EpPropose(Process.ets, Process.l, new EpState(0, null), Process.val));
+//        }
     }
 
     @Override

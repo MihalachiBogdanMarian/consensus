@@ -21,25 +21,25 @@ public class Process {
     public static String fileName = "";
     public static boolean runForever = true;
     // UC
-    public static Integer val;
-    public static boolean proposed;
-    public static boolean decided;
-    public static int ets; // current timestamp (of the current epoch)
-    public static ProcessId l; // the current leader (of the current epoch)
-    public static int newts; // the new epoch
-    public static ProcessId newl; // the new leader
-    public static ProcessId l0; // the initial leader
+    public static Integer val = 0;
+    public static boolean proposed = false;
+    public static boolean decided = false;
+    public static int ets = 0; // current timestamp (of the current epoch)
+    public static ProcessId l = null; // the current leader (of the current epoch)
+    public static int newts = 0; // the new epoch
+    public static ProcessId newl = null; // the new leader
+    public static ProcessId l0 = null; // the initial leader
     // EC
-    public static ProcessId trusted;
-    public static int lastts; // last epoch that it started
-    public static int ts; // timestamp of an epoch at which it tried to be leader
+    public static ProcessId trusted = null;
+    public static int lastts = 0; // last epoch that it started
+    public static int ts = Utilities.rank(Process.processes, Process.getSelf()); // timestamp of an epoch at which it tried to be leader
     // EP
     public static Map<Integer, EpInstance> epInstances = new HashMap<>();
     // ELD
-    public static int epoch; // how many times the process crashed and recovered
-    public static LinkedList<SimpleEntry<ProcessId, Integer>> candidates;
-    public static int delay;
-    public final static int delta = 1000; // milliseconds
+    public static int epoch = 0; // how many times the process crashed and recovered
+    public static LinkedList<SimpleEntry<ProcessId, Integer>> candidates = new LinkedList<>();;
+    public final static int delta = 100; // milliseconds
+    public static int delay = delta;
 
 
     private final static String SERVER_ADDRESS = "127.0.0.1";
@@ -91,12 +91,6 @@ public class Process {
         eventsQueue.insert(new OmegaInit());
         eventsQueue.insert(new UcInit());
         eventsQueue.insert(new UcPropose(v));
-
-        while (true) {
-            if (!runForever) {
-                break;
-            }
-        }
     }
 
     public void sendResponseToServer(String request, Socket socket) throws IOException {

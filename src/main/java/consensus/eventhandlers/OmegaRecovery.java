@@ -51,6 +51,6 @@ public class OmegaRecovery extends AbstractEvent {
             public void run() {
                 Process.eventsQueue.insert(new Timeout());
             }
-        }, Process.delta);
+        }, delay);
     }
 }

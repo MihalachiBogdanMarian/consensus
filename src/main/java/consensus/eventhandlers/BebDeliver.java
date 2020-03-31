@@ -39,6 +39,7 @@ public class BebDeliver extends AbstractEvent {
                                         .setValue(Process.epInstances.get(message.getEpRead().getEpTimestamp()).getVal())
                                         .setEpTimestamp(message.getEpRead().getEpTimestamp()).build())
                                 .build()));
+
                 break;
             case EP_WRITE_:
                 Process.epInstances.get(message.getEpWrite().getEpTimestamp()).setValts(message.getEpWrite().getEpTimestamp());
@@ -53,6 +54,23 @@ public class BebDeliver extends AbstractEvent {
                 break;
             default:
                 break;
+        }
+    }
+
+    @Override
+    public boolean conditionFulfilled() {
+        if (message.getType().equals(Message.Type.EP_READ_)) {
+            if (!Process.epInstances.containsKey(message.getEpRead().getEpTimestamp())) {
+                return false;
+            }
+            return true;
+        } else if (message.getType().equals(Message.Type.EP_WRITE_)) {
+            if (!Process.epInstances.containsKey(message.getEpWrite().getEpTimestamp())) {
+                return false;
+            }
+            return true;
+        } else {
+            return true;
         }
     }
 

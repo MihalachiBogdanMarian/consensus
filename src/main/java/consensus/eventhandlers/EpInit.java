@@ -30,10 +30,10 @@ public class EpInit extends AbstractEvent {
         }
         Process.epInstances.put(ts, new EpInstance(state.getTimestamp(), state.getValue(), 0, epStates, 0));
 
-        if (Process.l.equals(Process.getSelf()) && Process.val != 0 && !Process.proposed) {
-            Process.proposed = true;
-            Process.eventsQueue.insert(new EpPropose(Process.ets, Process.l, new EpState(0, null), Process.val));
-        }
+//        if (Process.l.equals(Process.getSelf()) && Process.val != 0 && !Process.proposed) {
+//            Process.proposed = true;
+//            Process.eventsQueue.insert(new EpPropose(ts, Process.l, new EpState(0, null), Process.val));
+//        }
     }
 
     @Override

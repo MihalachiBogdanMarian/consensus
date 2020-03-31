@@ -2,7 +2,7 @@ package consensus.network.process;
 
 import consensus.eventsqueue.QueueNode;
 
-public class EventsThread implements Runnable {
+public class EventsThread extends Thread {
     private Thread t;
     private String threadName;
 
@@ -18,7 +18,12 @@ public class EventsThread implements Runnable {
                     currentEvent.getEvent().handle();
                 }
             }
+
+            if (!Process.runForever) {
+                break;
+            }
         }
+        System.exit(0);
     }
 
     public void start() {

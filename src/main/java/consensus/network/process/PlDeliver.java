@@ -13,7 +13,7 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class PlDeliver implements Runnable {
+public class PlDeliver extends Thread {
     private Thread t;
     private String threadName;
 
@@ -104,10 +104,15 @@ public class PlDeliver implements Runnable {
                         }
                         break;
                     case END:
+                        System.out.println("Goodbye!");
                         Process.runForever = false;
                         break;
                     default:
                         break;
+                }
+
+                if (!Process.runForever) {
+                    break;
                 }
             }
         } catch (
