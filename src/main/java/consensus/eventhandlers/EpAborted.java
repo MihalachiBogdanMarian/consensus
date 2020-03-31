@@ -32,10 +32,10 @@ public class EpAborted extends AbstractEvent {
         // leader ℓ, and state state;
         Process.eventsQueue.insert(new EpInit(Process.ets, Process.l, new EpState(valts, val)));
 
-//        if (Process.l.equals(Process.getSelf()) && Process.val != 0 && !Process.proposed) {
-//            Process.proposed = true;
-//            Process.eventsQueue.insert(new EpPropose(Process.ets, Process.l, new EpState(0, null), Process.val));
-//        }
+        if (Process.l.equals(Process.getSelf()) && Process.val != 0 && !Process.proposed) {
+            Process.proposed = true;
+            Process.eventsQueue.insert(new EpPropose(Process.ets, Process.l, new EpState(0, null), Process.val));
+        }
     }
 
     @Override
