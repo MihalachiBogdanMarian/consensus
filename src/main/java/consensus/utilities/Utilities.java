@@ -1,16 +1,12 @@
 package consensus.utilities;
 
 import consensus.network.process.EpState;
-import consensus.network.process.Process;
 import consensus.protos.Consensus.ProcessId;
 import consensus.protos.Consensus.Message;
 
 import java.io.*;
+import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
 
 public class Utilities {
 
@@ -140,20 +136,20 @@ public class Utilities {
         return candidates.get(0).getKey();
     }
 
-    public static boolean exists(LinkedList<SimpleEntry<ProcessId, Integer>> candidates, ProcessId process, Integer value) {
+    public static Integer exists(LinkedList<SimpleEntry<ProcessId, Integer>> candidates, ProcessId process, Integer value) {
         for (SimpleEntry<ProcessId, Integer> simpleEntry : candidates) {
             if (simpleEntry.getKey().equals(process) && simpleEntry.getValue() < value) {
-                return true;
+                return simpleEntry.getValue();
             }
         }
-        return false;
+        return -1;
     }
 
-    public static boolean addInOrder(LinkedList<SimpleEntry<ProcessId, Integer>> linkedList, ProcessId process, Integer value) {
+    public static boolean addInOrder(List<ProcessId> processes, LinkedList<SimpleEntry<ProcessId, Integer>> linkedList, ProcessId process, Integer value) {
         ListIterator<SimpleEntry<ProcessId, Integer>> listIterator = linkedList.listIterator();
 
         while (listIterator.hasNext()) {
-            int comparison = compareTo(listIterator.next(), new SimpleEntry<>(process, value));
+            int comparison = compareTo(processes, listIterator.next(), new SimpleEntry<>(process, value));
             if (comparison == 0) {
                 // equal, do not add
                 return false;
@@ -171,20 +167,28 @@ public class Utilities {
         return true;
     }
 
-    private static int compareTo(SimpleEntry<ProcessId, Integer> simpleEntry1, SimpleEntry<ProcessId, Integer> simpleEntry2) {
-        if (Utilities.rank(Process.processes, simpleEntry1.getKey()) == Utilities.rank(Process.processes, simpleEntry2.getKey())
-                && simpleEntry1.getValue() == simpleEntry2.getValue()) {
+    private static int compareTo(List<ProcessId> processes, SimpleEntry<ProcessId, Integer> simpleEntry1, SimpleEntry<ProcessId, Integer> simpleEntry2) {
+        if (Utilities.rank(processes, simpleEntry1.getKey()) == Utilities.rank(processes, simpleEntry2.getKey())
+                && simpleEntry1.getValue().equals(simpleEntry2.getValue())) {
             return 0;
         } else if ((simpleEntry1.getValue() > simpleEntry2.getValue()) ||
-                (Utilities.rank(Process.processes, simpleEntry1.getKey()) < Utilities.rank(Process.processes, simpleEntry2.getKey())
-                        && simpleEntry1.getValue() == simpleEntry2.getValue())) {
+                (simpleEntry1.getValue().equals(simpleEntry2.getValue())
+                        && Utilities.rank(processes, simpleEntry1.getKey()) < Utilities.rank(processes, simpleEntry2.getKey()))) {
             return 1;
         } else if ((simpleEntry1.getValue() < simpleEntry2.getValue()) ||
-                (Utilities.rank(Process.processes, simpleEntry1.getKey()) > Utilities.rank(Process.processes, simpleEntry2.getKey())
-                        && simpleEntry1.getValue() == simpleEntry2.getValue())) {
+                (simpleEntry1.getValue().equals(simpleEntry2.getValue())
+                        && Utilities.rank(processes, simpleEntry1.getKey()) > Utilities.rank(processes, simpleEntry2.getKey()))) {
             return -1;
         }
         return 0;
+    }
+
+    public static void printList(LinkedList<SimpleEntry<ProcessId, Integer>> linkedList) {
+        Iterator<SimpleEntry<ProcessId, Integer>> i = linkedList.iterator();
+        while (i.hasNext()) {
+            SimpleEntry<ProcessId, Integer> se = i.next();
+            System.out.println(se.getKey().getIndex() + " <---> " + se.getValue());
+        }
     }
 
     public static int hashtag(Map<ProcessId, EpState> states) {
@@ -208,4 +212,5 @@ public class Utilities {
         }
         return epState;
     }
+
 }

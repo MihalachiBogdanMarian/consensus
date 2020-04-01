@@ -1,6 +1,5 @@
 package consensus.eventhandlers;
 
-import consensus.network.process.EpState;
 import consensus.network.process.Process;
 
 public class UcPropose extends AbstractEvent {

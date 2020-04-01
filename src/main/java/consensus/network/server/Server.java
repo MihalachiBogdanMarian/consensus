@@ -6,9 +6,7 @@ import consensus.utilities.Utilities;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 public class Server {
 
@@ -35,7 +33,6 @@ public class Server {
     public void waitForProcesses() throws IOException {
         try {
             while (running) {
-
                 System.out.println("Waiting for a process...");
                 Socket socket = getServerSocket().accept();
                 System.out.println("A process is connected...");

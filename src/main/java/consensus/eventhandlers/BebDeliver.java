@@ -32,25 +32,30 @@ public class BebDeliver extends AbstractEvent {
                 }
                 break;
             case EP_READ_:
-                Process.eventsQueue.insert(new PlSend(Process.getSelf(), processFrom,
-                        Message.newBuilder().setType(Message.Type.EP_STATE_)
-                                .setEpState(EpState_.newBuilder()
-                                        .setValueTimestamp(Process.epInstances.get(message.getEpRead().getEpTimestamp()).getValts())
-                                        .setValue(Process.epInstances.get(message.getEpRead().getEpTimestamp()).getVal())
-                                        .setEpTimestamp(message.getEpRead().getEpTimestamp()).build())
-                                .build()));
-
+                if (!Process.epInstances.get(message.getEpRead().getEpTimestamp()).isAborted()) {
+                    Process.eventsQueue.insert(new PlSend(Process.getSelf(), processFrom,
+                            Message.newBuilder().setType(Message.Type.EP_STATE_)
+                                    .setEpState(EpState_.newBuilder()
+                                            .setValueTimestamp(Process.epInstances.get(message.getEpRead().getEpTimestamp()).getValts())
+                                            .setValue(Process.epInstances.get(message.getEpRead().getEpTimestamp()).getVal())
+                                            .setEpTimestamp(message.getEpRead().getEpTimestamp()).build())
+                                    .build()));
+                }
                 break;
             case EP_WRITE_:
-                Process.epInstances.get(message.getEpWrite().getEpTimestamp()).setValts(message.getEpWrite().getEpTimestamp());
-                Process.epInstances.get(message.getEpWrite().getEpTimestamp()).setVal(message.getEpWrite().getValue());
-                Process.eventsQueue.insert(new PlSend(Process.getSelf(), processFrom,
-                        Message.newBuilder().setType(Message.Type.EP_ACCEPT_)
-                                .setEpAccept(EpAccept_.newBuilder().setEpTimestamp(message.getEpWrite().getEpTimestamp()).build())
-                                .build()));
+                if (!Process.epInstances.get(message.getEpWrite().getEpTimestamp()).isAborted()) {
+                    Process.epInstances.get(message.getEpWrite().getEpTimestamp()).setValts(message.getEpWrite().getEpTimestamp());
+                    Process.epInstances.get(message.getEpWrite().getEpTimestamp()).setVal(message.getEpWrite().getValue());
+                    Process.eventsQueue.insert(new PlSend(Process.getSelf(), processFrom,
+                            Message.newBuilder().setType(Message.Type.EP_ACCEPT_)
+                                    .setEpAccept(EpAccept_.newBuilder().setEpTimestamp(message.getEpWrite().getEpTimestamp()).build())
+                                    .build()));
+                }
                 break;
             case EP_DECIDED_:
-                Process.eventsQueue.insert(new EpDecide(message.getEpDecided().getEpTimestamp(), message.getEpDecided().getValue()));
+                if (!Process.epInstances.get(message.getEpDecided().getEpTimestamp()).isAborted()) {
+                    Process.eventsQueue.insert(new EpDecide(message.getEpDecided().getEpTimestamp(), message.getEpDecided().getValue()));
+                }
                 break;
             default:
                 break;
@@ -66,6 +71,11 @@ public class BebDeliver extends AbstractEvent {
             return true;
         } else if (message.getType().equals(Message.Type.EP_WRITE_)) {
             if (!Process.epInstances.containsKey(message.getEpWrite().getEpTimestamp())) {
+                return false;
+            }
+            return true;
+        } else if (message.getType().equals(Message.Type.EP_DECIDED_)) {
+            if (!Process.epInstances.containsKey(message.getEpDecided().getEpTimestamp())) {
                 return false;
             }
             return true;

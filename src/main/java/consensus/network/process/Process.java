@@ -37,8 +37,8 @@ public class Process {
     public static Map<Integer, EpInstance> epInstances = new LinkedHashMap<>();
     // ELD
     public static int epoch = 0; // how many times the process crashed and recovered
-    public static LinkedList<SimpleEntry<ProcessId, Integer>> candidates = new LinkedList<>();;
-    public final static int delta = 100; // milliseconds
+    public static LinkedList<SimpleEntry<ProcessId, Integer>> candidates = new LinkedList<>();
+    public final static int delta = 1000; // milliseconds
     public static int delay = delta;
 
 
@@ -88,8 +88,8 @@ public class Process {
         plDeliver.start();
 
         // start the algorithms
-        eventsQueue.insert(new EcInit());
         eventsQueue.insert(new OmegaInit());
+        eventsQueue.insert(new EcInit());
         eventsQueue.insert(new UcInit());
         eventsQueue.insert(new UcPropose(v));
     }
