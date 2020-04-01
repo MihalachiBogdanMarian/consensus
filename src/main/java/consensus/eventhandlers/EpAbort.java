@@ -1,7 +1,6 @@
 package consensus.eventhandlers;
 
 import consensus.network.process.Process;
-import consensus.protos.Consensus;
 
 public class EpAbort extends AbstractEvent {
 
@@ -16,6 +15,7 @@ public class EpAbort extends AbstractEvent {
     public void handle() {
         this.displayExecution();
         Process.eventsQueue.insert(new EpAborted(ts, Process.epInstances.get(ts).getValts(), Process.epInstances.get(ts).getVal()));
+        Process.epInstances.get(ts).setAborted(true);
     }
 
     @Override

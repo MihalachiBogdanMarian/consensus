@@ -25,17 +25,19 @@ public class EpPropose extends AbstractEvent {
     @Override
     public void handle() {
         this.displayExecution();
-        Process.epInstances.get(ts).setTmpval(v);
+        if (!Process.epInstances.get(ts).isAborted()) {
+            Process.epInstances.get(ts).setTmpval(v);
 
-        Process.eventsQueue.insert(new BebBroadcast(
-                Message.newBuilder().setType(Message.Type.BEB_BROADCAST)
-                        .setBebBroadcast(Consensus.BebBroadcast.newBuilder().setMessage(Message.newBuilder()
-                                        .setType(Message.Type.EP_READ_)
-                                        .setEpRead(EpRead_.newBuilder().setEpTimestamp(ts).build())
-                                        .build()
-                                ).build()
-                        ).build()
-        ));
+            Process.eventsQueue.insert(new BebBroadcast(
+                    Message.newBuilder().setType(Message.Type.BEB_BROADCAST)
+                            .setBebBroadcast(Consensus.BebBroadcast.newBuilder().setMessage(Message.newBuilder()
+                                            .setType(Message.Type.EP_READ_)
+                                            .setEpRead(EpRead_.newBuilder().setEpTimestamp(ts).build())
+                                            .build()
+                                    ).build()
+                            ).build()
+            ));
+        }
     }
 
     @Override

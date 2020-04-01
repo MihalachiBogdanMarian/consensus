@@ -11,6 +11,7 @@ public class EpInstance {
     private Integer tmpval;
     private Map<ProcessId, EpState> states;
     private Integer accepted;
+    private boolean aborted;
 
     public EpInstance(Integer vals, Integer val, Integer tmpval, Map<ProcessId, EpState> states, Integer accepted) {
         this.valts = vals;
@@ -18,6 +19,7 @@ public class EpInstance {
         this.tmpval = tmpval;
         this.states = states;
         this.accepted = accepted;
+        this.aborted = false;
     }
 
     public Integer getValts() {
@@ -58,5 +60,13 @@ public class EpInstance {
 
     public void setAccepted(Integer accepted) {
         this.accepted = accepted;
+    }
+
+    public boolean isAborted() {
+        return aborted;
+    }
+
+    public void setAborted(boolean aborted) {
+        this.aborted = aborted;
     }
 }
