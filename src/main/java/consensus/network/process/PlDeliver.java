@@ -10,11 +10,8 @@ import consensus.utilities.Utilities;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -30,6 +27,7 @@ public class PlDeliver extends Thread {
 
     public void run() {
         InputStream in = null;
+        int ts;
         try {
             in = Process.socket.getInputStream();
 
@@ -76,29 +74,30 @@ public class PlDeliver extends Thread {
                         }
                         break;
                     case EP_STATE_:
-                        if (!Process.epInstances.get(message.getEpState().getEpTimestamp()).isAborted()) {
-                            Process.epInstances.get(message.getEpState().getEpTimestamp()).getStates().put(processFrom,
+                        ts = Collections.max(Process.epInstances.keySet());
+                        if (!Process.epInstances.get(ts).isAborted()) {
+                            Process.epInstances.get(ts).getStates().put(processFrom,
                                     new EpState(message.getEpState().getValueTimestamp(), message.getEpState().getValue()));
-                            if (Utilities.hashtag(Process.epInstances.get(message.getEpState().getEpTimestamp()).getStates()) > Process.processes.size() / 2) {
-                                EpState epState = Utilities.highest(Process.epInstances.get(message.getEpState().getEpTimestamp()).getStates());
+                            if (Utilities.hashtag(Process.epInstances.get(ts).getStates()) > Process.processes.size() / 2) {
+                                EpState epState = Utilities.highest(Process.epInstances.get(ts).getStates());
 
                                 if (epState.getValue() != 0) {
-                                    Process.epInstances.get(message.getEpState().getEpTimestamp()).setTmpval(epState.getValue());
+                                    Process.epInstances.get(ts).setTmpval(epState.getValue());
                                 }
 
                                 Map<ProcessId, EpState> epStates = new HashMap<>();
                                 for (int i = 0; i < Process.processes.size(); i++) {
                                     epStates.put(Process.processes.get(i), null);
                                 }
-                                Process.epInstances.get(message.getEpState().getEpTimestamp()).setStates(epStates);
+                                Process.epInstances.get(ts).setStates(epStates);
 
                                 Process.eventsQueue.insert(new consensus.eventhandlers.BebBroadcast(
                                         Message.newBuilder().setType(Message.Type.BEB_BROADCAST)
                                                 .setBebBroadcast(Consensus.BebBroadcast.newBuilder().setMessage(Message.newBuilder()
                                                                 .setType(Message.Type.EP_WRITE_)
                                                                 .setEpWrite(Consensus.EpWrite_.newBuilder()
-                                                                        .setValue(Process.epInstances.get(message.getEpState().getEpTimestamp()).getTmpval())
-                                                                        .setEpTimestamp(message.getEpState().getEpTimestamp()).build())
+                                                                        .setValue(Process.epInstances.get(ts).getTmpval())
+                                                                        .build())
                                                                 .build()
                                                         ).build()
                                                 ).build()
@@ -107,18 +106,19 @@ public class PlDeliver extends Thread {
                         }
                         break;
                     case EP_ACCEPT_:
-                        if (!Process.epInstances.get(message.getEpAccept().getEpTimestamp()).isAborted()) {
-                            Process.epInstances.get(message.getEpAccept().getEpTimestamp()).setAccepted(Process.epInstances.get(message.getEpAccept().getEpTimestamp()).getAccepted() + 1);
-                            if (Process.epInstances.get(message.getEpAccept().getEpTimestamp()).getAccepted() > Process.processes.size() / 2) {
-                                Process.epInstances.get(message.getEpAccept().getEpTimestamp()).setAccepted(0);
+                        ts = Collections.max(Process.epInstances.keySet());
+                        if (!Process.epInstances.get(ts).isAborted()) {
+                            Process.epInstances.get(ts).setAccepted(Process.epInstances.get(ts).getAccepted() + 1);
+                            if (Process.epInstances.get(ts).getAccepted() > Process.processes.size() / 2) {
+                                Process.epInstances.get(ts).setAccepted(0);
 
                                 Process.eventsQueue.insert(new consensus.eventhandlers.BebBroadcast(
                                         Message.newBuilder().setType(Message.Type.BEB_BROADCAST)
                                                 .setBebBroadcast(Consensus.BebBroadcast.newBuilder().setMessage(Message.newBuilder()
                                                                 .setType(Message.Type.EP_DECIDED_)
                                                                 .setEpDecided(Consensus.EpDecided_.newBuilder()
-                                                                        .setValue(Process.epInstances.get(message.getEpAccept().getEpTimestamp()).getTmpval())
-                                                                        .setEpTimestamp(message.getEpAccept().getEpTimestamp()).build())
+                                                                        .setValue(Process.epInstances.get(ts).getTmpval())
+                                                                        .build())
                                                                 .build()
                                                         ).build()
                                                 ).build()

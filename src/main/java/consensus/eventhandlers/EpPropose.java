@@ -32,7 +32,7 @@ public class EpPropose extends AbstractEvent {
                     Message.newBuilder().setType(Message.Type.BEB_BROADCAST)
                             .setBebBroadcast(Consensus.BebBroadcast.newBuilder().setMessage(Message.newBuilder()
                                             .setType(Message.Type.EP_READ_)
-                                            .setEpRead(EpRead_.newBuilder().setEpTimestamp(ts).build())
+                                            .setEpRead(EpRead_.newBuilder().build())
                                             .build()
                                     ).build()
                             ).build()
