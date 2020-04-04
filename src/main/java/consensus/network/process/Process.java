@@ -38,7 +38,7 @@ public class Process {
     // ELD
     public static int epoch = 0; // how many times the process crashed and recovered
     public static LinkedList<SimpleEntry<ProcessId, Integer>> candidates = new LinkedList<>();
-    public final static int delta = 1000; // milliseconds
+    public final static int delta = 100; // milliseconds
     public static int delay = delta;
 
 
@@ -64,10 +64,6 @@ public class Process {
         port = Utilities.bytesToInt(portBytes);
 //        System.out.println(port);
 
-        // Events Queue - listening for events and handling them in order
-        EventsThread eventsThread = new EventsThread("EventsThread");
-        eventsThread.start();
-
         System.out.println("Waiting from message from server... ");
         // the value I have to propose and all the processes I work with
         int v = readValueToProposeAndProcesses(socket);
@@ -92,6 +88,10 @@ public class Process {
         eventsQueue.insert(new EcInit());
         eventsQueue.insert(new UcInit());
         eventsQueue.insert(new UcPropose(v));
+
+        // Events Queue - listening for events and handling them in order
+        EventsThread eventsThread = new EventsThread("EventsThread");
+        eventsThread.start();
     }
 
     public void sendResponseToServer(String request, Socket socket) throws IOException {

@@ -61,27 +61,22 @@ message EpAbort {
 }
 
 message EpRead_ {
-    int32 epTimestamp = 1;
 }
 
 message EpState_ {
     int32 valueTimestamp = 1;
     int32 value = 2;
-    int32 epTimestamp = 3;
 }
 
 message EpWrite_ {
     int32 value = 1;
-    int32 epTimestamp = 2;
 }
 
 message EpAccept_ {
-    int32 epTimestamp = 1;
 }
 
 message EpDecided_ {
     int32 value = 1;
-    int32 epTimestamp = 2;
 }
 
 // EC
