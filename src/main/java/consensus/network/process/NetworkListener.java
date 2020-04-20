@@ -33,7 +33,7 @@ public class NetworkListener extends Thread {
             while (running) {
                 socket = getProcessSocket().accept();
 
-                // read AppRegistration/AppDecide from process
+                // read message from process
                 Message message = Utilities.readMessage(socket.getInputStream());
                 Process.systems.get(message.getSystemId()).eventsQueue.insert(message);
 //                System.out.println(message);

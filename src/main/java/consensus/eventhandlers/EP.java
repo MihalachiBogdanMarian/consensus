@@ -47,7 +47,7 @@ public class EP extends AbstractAlgorithm {
                 if (message.getBebDeliver().getMessage().getType().equals(Message.Type.EP_READ_) ||
                         message.getBebDeliver().getMessage().getType().equals(Message.Type.EP_WRITE_) ||
                         message.getBebDeliver().getMessage().getType().equals(Message.Type.EP_DECIDED_)) {
-                    if (Integer.parseInt(message.getAbstractionId()) == ts) {
+                    if (Integer.parseInt(message.getBebDeliver().getMessage().getAbstractionId()) == ts) {
                         bebDeliver(Integer.valueOf(message.getSystemId()),
                                 message.getBebDeliver().getSender(),
                                 message.getBebDeliver().getMessage());
@@ -57,9 +57,9 @@ public class EP extends AbstractAlgorithm {
                 }
                 return false;
             case PL_DELIVER:
-                if (message.getBebDeliver().getMessage().getType().equals(Message.Type.EP_STATE_) ||
-                        message.getBebDeliver().getMessage().getType().equals(Message.Type.EP_ACCEPT_)) {
-                    if (Integer.parseInt(message.getAbstractionId()) == ts) {
+                if (message.getPlDeliver().getMessage().getType().equals(Message.Type.EP_STATE_) ||
+                        message.getPlDeliver().getMessage().getType().equals(Message.Type.EP_ACCEPT_)) {
+                    if (Integer.parseInt(message.getPlDeliver().getMessage().getAbstractionId()) == ts) {
                         plDeliver(Integer.valueOf(message.getSystemId()),
                                 message.getPlDeliver().getSender(),
                                 message.getPlDeliver().getMessage());
@@ -91,6 +91,7 @@ public class EP extends AbstractAlgorithm {
             states.put(Process.processes.get(i), null);
         }
         accepted = 0;
+        aborted = false;
     }
 
     private void propose(int systemId, int v) {
