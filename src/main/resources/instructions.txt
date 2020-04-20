@@ -1,5 +1,7 @@
 protoc -I=C:\Users\BiDi\Documents\IntelliJProjects\consensus\src\main\protofiles --java_out=C:\Users\BiDi\Documents\IntelliJProjects\consensus\src\main\java C:\Users\BiDi\Documents\IntelliJProjects\consensus\src\main\protofiles\addressbook.proto
 
+// for generating the Consensus Java file
 protoc -I=C:\Users\BiDi\Documents\IntelliJProjects\consensus\src\main\protofiles --java_out=C:\Users\BiDi\Documents\IntelliJProjects\consensus\src\main\java\consensus\protos C:\Users\BiDi\Documents\IntelliJProjects\consensus\src\main\protofiles\consensus.proto
 
+// the path to where each process stores its current epoch
 "C:\\Users\\BiDi\\Documents\\IntelliJProjects\\consensus\\src\\main\\resources\\" + fileIndex + ".txt"

@@ -1,6 +1,6 @@
 package consensus.eventhandlers;
 
-public class AbstractEvent implements Event {
+public class AbstractAlgorithm implements Algorithm {
 
     protected String name;
 
@@ -16,7 +16,7 @@ public class AbstractEvent implements Event {
 
     @Override
     public String toString() {
-        return "AbstractEvent{" +
+        return "AbstractAlgorithm{" +
                 "name='" + name + '\'' +
                 '}';
     }

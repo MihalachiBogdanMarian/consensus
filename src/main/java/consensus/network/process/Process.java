@@ -1,54 +1,40 @@
 package consensus.network.process;
 
 import consensus.eventhandlers.*;
-import consensus.eventsqueue.Queue;
+import consensus.network.server.Hub;
+import consensus.protos.Consensus;
 import consensus.protos.Consensus.ProcessId;
+import consensus.protos.Consensus.Message;
 import consensus.utilities.Utilities;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintWriter;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.*;
-import java.util.AbstractMap.SimpleEntry;
 
 public class Process {
 
-    public static volatile Queue<AbstractEvent> eventsQueue = new Queue<>();
-    public static List<ProcessId> processes = new LinkedList<>();
+    public static Map<Integer, ConsensusSystem> systems = new LinkedHashMap<>();
+    public static List<ProcessId> processes = new ArrayList<>();
+
+    public static String owner;
+    public static String address;
     public static int port;
     public static String fileName = "";
-    public static boolean runForever = true;
-    // UC
-    public static Integer val = 0;
-    public static boolean proposed = false;
-    public static boolean decided = false;
-    public static int ets = 0; // current timestamp (of the current epoch)
-    public static ProcessId l = null; // the current leader (of the current epoch)
-    public static int newts = 0; // the new epoch
-    public static ProcessId newl = null; // the new leader
-    public static ProcessId l0 = null; // the initial leader
-    // EC
-    public static ProcessId trusted = null;
-    public static int lastts = 0; // last epoch that it started
-    public static int ts = Utilities.rank(Process.processes, Process.getSelf()); // timestamp of an epoch at which it tried to be leader
-    // EP
-    public static Map<Integer, EpInstance> epInstances = new LinkedHashMap<>();
-    // ELD
-    public static int epoch = 0; // how many times the process crashed and recovered
-    public static LinkedList<SimpleEntry<ProcessId, Integer>> candidates = new LinkedList<>();
-    public final static int delta = 100; // milliseconds
-    public static int delay = delta;
 
+    private final static String HUB_ADDRESS = "127.0.0.1";
+    private final static int HUB_PORT = 8100;
+    public static volatile Socket hubSocket;
 
-    private final static String SERVER_ADDRESS = "127.0.0.1";
-    private final static int PORT = 8100;
-    public static volatile Socket socket;
+    public static ProcessId l0;
+    public static ProcessId l;
 
     public Process() {
         try {
-            socket = new Socket(SERVER_ADDRESS, PORT);
+            hubSocket = new Socket(HUB_ADDRESS, HUB_PORT);
+            owner = "Bidi";
+            address = "127.0.0.1";
+            port = Utilities.retrieve("..\\consensus\\src\\main\\resources\\port.txt");
+            Utilities.store(port + 1, "..\\consensus\\src\\main\\resources\\port.txt");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -56,84 +42,77 @@ public class Process {
 
     public static void main(String[] args) throws IOException {
         Process process = new Process();
+        System.out.println("Waiting for AppPropose...");
 
-        // read my port
-        InputStream in = socket.getInputStream();
-        byte[] portBytes = new byte[Integer.SIZE / Byte.SIZE];
-        in.read(portBytes, 0, Integer.SIZE / Byte.SIZE);
-        port = Utilities.bytesToInt(portBytes);
-//        System.out.println(port);
+        // send AppRegistration to Hub
+        Utilities.writeMessage(hubSocket.getOutputStream(), Message.newBuilder()
+                .setType(Message.Type.APP_REGISTRATION)
+                .setAppRegistration(
+                        Consensus.AppRegistration.newBuilder()
+                                .setOwner(owner)
+                                .setIndex(port % 10)
+                                .setPort(port)
+                                .build()
+                ).build());
 
-        System.out.println("Waiting from message from server... ");
-        // the value I have to propose and all the processes I work with
-        int v = readValueToProposeAndProcesses(socket);
-        fileName = "C:\\Users\\BiDi\\Documents\\IntelliJProjects\\consensus\\src\\main\\resources\\rank" + Utilities.rank(Process.processes, Process.getSelf()) + ".txt";
+        // read AppProposes
+        List<Message> appProposes = new LinkedList<>();
+        for (int i = 1; i <= Hub.nrSystems; i++) {
+            appProposes.add(Utilities.readMessage(hubSocket.getInputStream()));
+        }
+//        for (int i = 1; i <= Hub.nrSystems; i++) {
+//            System.out.println(appProposes.get(i - 1));
+//        }
+
+        // fill the systems
+        for (Message appPropose : appProposes) {
+            processes = appPropose.getAppPropose().getProcessesList();
+            Map<String, AbstractAlgorithm> algorithms = new HashMap<>();
+            algorithms.put("UC", new UC());
+            algorithms.put("EC", new EC());
+            algorithms.put("OMEGA", new OMEGA());
+            algorithms.put("BEB", new BEB());
+            algorithms.put("PL", new PL());
+            systems.put(Integer.parseInt(appPropose.getSystemId()),
+                    new ConsensusSystem(appPropose.getAppPropose().getValue(), processes, algorithms));
+        }
+        System.out.println(systems);
+        System.out.println(processes);
+
+        List<ProcessId> processes = appProposes.get(0).getAppPropose().getProcessesList();
+        fileName = "..\\consensus\\src\\main\\resources\\recovery" + Utilities.rank(processes, getSelf()) + ".txt";
         l0 = Utilities.maxrank(processes);
         l = l0;
 
-        System.out.println("Process " + Process.getSelf().getIndex());
-        System.out.println(v);
-        System.out.println();
-        for (ProcessId processId : processes) {
-            System.out.println(processId.toString());
-        }
-        System.out.println();
-
         // listening for messages from other processes
-        PlDeliver plDeliver = new PlDeliver("PlDeliver");
-        plDeliver.start();
+        NetworkListener networkListener = new NetworkListener("NetworkListener", port);
+        networkListener.start();
 
         // start the algorithms
-        eventsQueue.insert(new OmegaInit());
-        eventsQueue.insert(new EcInit());
-        eventsQueue.insert(new UcInit());
-        eventsQueue.insert(new UcPropose(v));
+        for (Map.Entry<Integer, ConsensusSystem> entry : systems.entrySet()) {
+            entry.getValue().algorithms.get("OMEGA").init(entry.getKey());
+            entry.getValue().algorithms.get("EC").init(entry.getKey());
+            entry.getValue().algorithms.get("UC").init(entry.getKey());
+            entry.getValue().eventsQueue.insert(Message.newBuilder()
+                    .setSystemId(String.valueOf(entry.getKey()))
+                    .setType(Message.Type.UC_PROPOSE)
+                    .setUcPropose(Consensus.UcPropose.newBuilder()
+                            .setValue(entry.getValue().valueToPropose)
+                            .build())
+                    .build());
+        }
 
-        // Events Queue - listening for events and handling them in order
+        // Events Queue - listening for events <-> messages and handling them in order
         EventsThread eventsThread = new EventsThread("EventsThread");
         eventsThread.start();
     }
 
-    public void sendResponseToServer(String request, Socket socket) throws IOException {
-        try {
-            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-            out.println(request);
-        } catch (UnknownHostException e) {
-            System.err.println("No server listening... " + e);
-        }
-    }
-
-    private String readFromKeyboard() {
-        System.out.print("Say something to the server: ");
-        Scanner scanner = new Scanner(System.in);
-        return scanner.nextLine();
-    }
-
-    private static int readValueToProposeAndProcesses(Socket socket) {
-        int v = 0;
-        try {
-            InputStream in = socket.getInputStream();
-
-            v = Utilities.readMessage(in).getUcPropose().getValue();
-
-            byte[] processesLengthBytes = new byte[Integer.SIZE / Byte.SIZE];
-            in.read(processesLengthBytes, 0, Integer.SIZE / Byte.SIZE);
-            for (int i = 0; i < Utilities.bytesToInt(processesLengthBytes); i++) {
-                processes.add(Utilities.readProcess(in));
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return v;
-    }
-
     public static ProcessId getSelf() {
-        for (ProcessId process : processes) {
+        for (ProcessId process : Process.processes) {
             if (process.getPort() == port) {
                 return process;
             }
         }
         return null;
     }
-
 }
