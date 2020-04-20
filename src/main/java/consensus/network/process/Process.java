@@ -21,8 +21,8 @@ public class Process {
     public static int port;
     public static String fileName = "";
 
-    private final static String HUB_ADDRESS = "127.0.0.1";
-    private final static int HUB_PORT = 8100;
+    public final static String HUB_ADDRESS = "127.0.0.1";
+    public final static int HUB_PORT = 8100;
     public static volatile Socket hubSocket;
 
     public static ProcessId l0;
@@ -63,6 +63,7 @@ public class Process {
 //        for (int i = 1; i <= Hub.nrSystems; i++) {
 //            System.out.println(appProposes.get(i - 1));
 //        }
+        hubSocket.close();
 
         // fill the systems
         for (Message appPropose : appProposes) {
@@ -76,8 +77,8 @@ public class Process {
             systems.put(Integer.parseInt(appPropose.getSystemId()),
                     new ConsensusSystem(appPropose.getAppPropose().getValue(), processes, algorithms));
         }
-        System.out.println(systems);
-        System.out.println(processes);
+//        System.out.println(systems);
+//        System.out.println(processes);
 
         List<ProcessId> processes = appProposes.get(0).getAppPropose().getProcessesList();
         fileName = "..\\consensus\\src\\main\\resources\\recovery" + Utilities.rank(processes, getSelf()) + ".txt";
@@ -90,9 +91,6 @@ public class Process {
 
         // start the algorithms
         for (Map.Entry<Integer, ConsensusSystem> entry : systems.entrySet()) {
-            entry.getValue().algorithms.get("OMEGA").init(entry.getKey());
-            entry.getValue().algorithms.get("EC").init(entry.getKey());
-            entry.getValue().algorithms.get("UC").init(entry.getKey());
             entry.getValue().eventsQueue.insert(Message.newBuilder()
                     .setSystemId(String.valueOf(entry.getKey()))
                     .setType(Message.Type.UC_PROPOSE)
@@ -100,6 +98,9 @@ public class Process {
                             .setValue(entry.getValue().valueToPropose)
                             .build())
                     .build());
+            entry.getValue().algorithms.get("OMEGA").init(entry.getKey());
+            entry.getValue().algorithms.get("EC").init(entry.getKey());
+            entry.getValue().algorithms.get("UC").init(entry.getKey());
         }
 
         // Events Queue - listening for events <-> messages and handling them in order

@@ -16,7 +16,7 @@ public class BEB extends AbstractAlgorithm {
         switch (message.getType()) {
             case BEB_BROADCAST:
                 broadcast(Integer.parseInt(message.getSystemId()),
-                        message);
+                        message.getBebBroadcast().getMessage());
                 return true;
             case PL_DELIVER:
                 if (message.getPlDeliver().getMessage().getType().equals(Message.Type.BEB_BROADCAST)) {
@@ -40,7 +40,12 @@ public class BEB extends AbstractAlgorithm {
                             .setType(Message.Type.PL_SEND)
                             .setSystemId(String.valueOf(systemId))
                             .setPlSend(Consensus.PlSend.newBuilder()
-                                    .setMessage(message)
+                                    .setMessage(
+                                            Message.newBuilder()
+                                                    .setType(Message.Type.BEB_BROADCAST)
+                                                    .setSystemId(String.valueOf(systemId))
+                                                    .setBebBroadcast(Consensus.BebBroadcast.newBuilder().setMessage(message).build())
+                                                    .build())
                                     .setReceiver(process)
                                     .build())
                             .build()
@@ -58,7 +63,7 @@ public class BEB extends AbstractAlgorithm {
                                 .setSystemId(String.valueOf(systemId))
                                 .setBebDeliver(Consensus.BebDeliver.newBuilder()
                                         .setSender(processFrom)
-                                        .setMessage(message)
+                                        .setMessage(message.getBebBroadcast().getMessage())
                                         .build())
                                 .build()
                 );

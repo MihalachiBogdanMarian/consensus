@@ -8,6 +8,7 @@ import consensus.utilities.Utilities;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.Socket;
 
 public class UC extends AbstractAlgorithm {
 
@@ -88,7 +89,7 @@ public class UC extends AbstractAlgorithm {
         );
 
         ets = 0;
-        l = Process.l0;
+        Process.l = Process.l0;
         newts = 0;
         newl = null;
     }
@@ -118,7 +119,7 @@ public class UC extends AbstractAlgorithm {
     private void EpAborted(int systemId, int ts, EpState epState) {
         this.displayExecution("Ep" + "." + ts + "Aborted", epState.getTimestamp(), epState.getValue());
         ets = newts;
-        l = newl;
+        Process.l = newl;
         proposed = false;
 
 //        specialMethod(systemId);
@@ -178,6 +179,7 @@ public class UC extends AbstractAlgorithm {
     private void decide(int systemId, int v) {
         this.displayExecution("UcDecide", v);
         try {
+            Process.hubSocket = new Socket(Process.HUB_ADDRESS, Process.HUB_PORT);
             OutputStream out = Process.hubSocket.getOutputStream();
 
             Utilities.writeMessage(out,

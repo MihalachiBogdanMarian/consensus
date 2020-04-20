@@ -32,7 +32,7 @@ public class EC extends AbstractAlgorithm {
                 }
                 return false;
             case PL_DELIVER:
-                if (message.getBebDeliver().getMessage().getType().equals(Message.Type.EC_NACK_)) {
+                if (message.getPlDeliver().getMessage().getType().equals(Message.Type.EC_NACK_)) {
                     plDeliver(Integer.valueOf(message.getSystemId()),
                             message.getPlDeliver().getSender(),
                             message.getPlDeliver().getMessage());

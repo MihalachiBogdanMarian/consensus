@@ -32,7 +32,7 @@ public class OMEGA extends AbstractAlgorithm {
                 timeout(Integer.parseInt(message.getSystemId()));
                 return true;
             case PL_DELIVER:
-                if (message.getBebDeliver().getMessage().getType().equals(Message.Type.ELD_HEARTBEAT_)) {
+                if (message.getPlDeliver().getMessage().getType().equals(Message.Type.ELD_HEARTBEAT_)) {
                     plDeliver(Integer.valueOf(message.getSystemId()),
                             message.getPlDeliver().getSender(),
                             message.getPlDeliver().getMessage());
@@ -102,6 +102,9 @@ public class OMEGA extends AbstractAlgorithm {
                             .build()
             );
         }
+
+        candidates = new LinkedList<>();
+        starttimer(systemId, delay);
     }
 
     private void timeout(int systemId) {
