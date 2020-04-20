@@ -1,35 +1,35 @@
 package consensus.eventsqueue;
 
-import consensus.eventhandlers.AbstractEvent;
+import consensus.protos.Consensus.Message;
 
-public class QueueNode<T extends AbstractEvent> {
+public class QueueNode {
 
-    private T event;
-    private QueueNode<T> next;
+    private Message event;
+    private QueueNode next;
 
     public QueueNode() {
         event = null;
         next = null;
     }
 
-    public QueueNode(T object, QueueNode<T> next) {
-        this.event = object;
+    public QueueNode(Message event, QueueNode next) {
+        this.event = event;
         this.next = next;
     }
 
-    public T getEvent() {
+    public Message getEvent() {
         return event;
     }
 
-    public void setEvent(T event) {
+    public void setEvent(Message event) {
         this.event = event;
     }
 
-    public QueueNode<T> getNext() {
+    public QueueNode getNext() {
         return next;
     }
 
-    public void setNext(QueueNode<T> next) {
+    public void setNext(QueueNode next) {
         this.next = next;
     }
 }

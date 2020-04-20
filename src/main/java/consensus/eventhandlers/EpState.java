@@ -1,4 +1,4 @@
-package consensus.network.process;
+package consensus.eventhandlers;
 
 public class EpState {
 

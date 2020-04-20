@@ -1,6 +1,6 @@
 package consensus.utilities;
 
-import consensus.network.process.EpState;
+import consensus.eventhandlers.EpState;
 import consensus.protos.Consensus.ProcessId;
 import consensus.protos.Consensus.Message;
 
@@ -31,7 +31,7 @@ public class Utilities {
     public static int rank(List<ProcessId> processes, ProcessId process) {
         for (ProcessId p : processes) {
             if (p.equals(process)) {
-                return p.getIndex();
+                return p.getRank();
             }
         }
         return 0;
@@ -40,7 +40,7 @@ public class Utilities {
     public static ProcessId maxrank(List<ProcessId> processes) {
         ProcessId maxProcess = processes.get(0);
         for (ProcessId process : processes) {
-            if (process.getIndex() > maxProcess.getIndex()) {
+            if (process.getRank() > maxProcess.getRank()) {
                 maxProcess = process;
             }
         }

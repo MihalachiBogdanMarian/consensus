@@ -1,29 +1,34 @@
 package consensus.eventsqueue;
 
-import consensus.eventhandlers.AbstractEvent;
+import consensus.network.process.ConsensusSystem;
+import consensus.network.process.Process;
+import consensus.eventhandlers.AbstractAlgorithm;
+import consensus.protos.Consensus.Message;
 
-public class Queue<T extends AbstractEvent> {
+import java.util.Map;
 
-    private QueueNode<T> head;
-    private QueueNode<T> tail;
+public class Queue {
+
+    private QueueNode head;
+    private QueueNode tail;
 
     public Queue() {
         this.head = null;
         this.tail = null;
     }
 
-    public Queue(T event) {
-        this.head = new QueueNode<>(event, null);
+    public Queue(Message event) {
+        this.head = new QueueNode(event, null);
         this.tail = this.head;
     }
 
-    public Queue(QueueNode<T> head, QueueNode<T> tail) {
+    public Queue(QueueNode head, QueueNode tail) {
         this.head = head;
         this.tail = tail;
     }
 
-    public void insert(T event) {
-        QueueNode<T> queueNode = new QueueNode<>(event, null);
+    public void insert(Message event) {
+        QueueNode queueNode = new QueueNode(event, null);
         if (!this.isEmpty()) {
             this.tail.setNext(queueNode);
             this.tail = queueNode;
@@ -33,14 +38,14 @@ public class Queue<T extends AbstractEvent> {
         }
     }
 
-    public QueueNode<T> deleteByCondition() {
-        QueueNode<T> queueNode = this.head;
-        QueueNode<T> previousQueueNode = null;
-        if (queueNode.getEvent().conditionFulfilled()) {
+    public QueueNode deleteByCondition() {
+        QueueNode queueNode = this.head;
+        QueueNode previousQueueNode = null;
+        if (match(queueNode.getEvent())) {
             this.head = this.head.getNext();
             return queueNode;
         } else {
-            while (!queueNode.getEvent().conditionFulfilled()) {
+            while (!match(queueNode.getEvent())) {
                 previousQueueNode = queueNode;
                 queueNode = queueNode.getNext();
                 if (queueNode == null) {
@@ -54,49 +59,58 @@ public class Queue<T extends AbstractEvent> {
         }
     }
 
-    public QueueNode<T> delete() {
-        QueueNode<T> queueNode = this.head;
+    public QueueNode delete() {
+        QueueNode queueNode = this.head;
         this.head = this.head.getNext();
         return queueNode;
     }
 
-    public T readByCondition() {
-        QueueNode<T> queueNode = this.head;
-        while (!queueNode.getEvent().conditionFulfilled()) {
+    public Message readByCondition() {
+        QueueNode queueNode = this.head;
+        while (!match(queueNode.getEvent())) {
             queueNode = queueNode.getNext();
         }
         return queueNode.getEvent();
     }
 
-    public T read() {
+    public Message read() {
         return this.head.getEvent();
     }
 
     public void display() {
-        Queue<T> copyQueue = new Queue<>(this.head, this.tail);
+        Queue copyQueue = new Queue(this.head, this.tail);
         while (!copyQueue.isEmpty()) {
             System.out.println(copyQueue.read().toString());
             copyQueue.delete();
         }
     }
 
+    private boolean match(Message message) {
+        for (Map.Entry<String, AbstractAlgorithm> entry : Process.systems.get(Integer.parseInt(message.getSystemId())).algorithms.entrySet()) {
+            if (entry.getValue().handle(message)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public boolean isEmpty() {
         return this.head == null;
     }
 
-    public QueueNode<T> getHead() {
+    public QueueNode getHead() {
         return head;
     }
 
-    public void setHead(QueueNode<T> head) {
+    public void setHead(QueueNode head) {
         this.head = head;
     }
 
-    public QueueNode<T> getTail() {
+    public QueueNode getTail() {
         return tail;
     }
 
-    public void setTail(QueueNode<T> tail) {
+    public void setTail(QueueNode tail) {
         this.tail = tail;
     }
 }
