@@ -1,6 +1,5 @@
 package consensus.network.process;
 
-import consensus.protos.Consensus.ProcessId;
 import consensus.protos.Consensus.Message;
 import consensus.utilities.Utilities;
 

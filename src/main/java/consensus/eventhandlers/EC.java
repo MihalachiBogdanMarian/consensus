@@ -46,14 +46,14 @@ public class EC extends AbstractAlgorithm {
     }
 
     public void init(int systemId) {
-        this.displayExecution("EcInit");
-        trusted = Process.l0;
+        this.displayExecution(systemId, "EcInit");
+        trusted = Process.systems.get(systemId).leader0;
         lastts = 0;
         ts = Utilities.rank(Process.processes, Process.getSelf());
     }
 
     private void omegaTrust(int systemId, ProcessId process) {
-        this.displayExecution("OmegaTrust", process);
+        this.displayExecution(systemId, "OmegaTrust", process);
         trusted = process;
         if (process.equals(Process.getSelf())) {
             ts += Process.processes.size();
@@ -73,7 +73,7 @@ public class EC extends AbstractAlgorithm {
     }
 
     private void bebDeliver(int systemId, ProcessId processFrom, Message message) {
-        this.displayExecution("BebDeliver", processFrom, message);
+        this.displayExecution(systemId, "BebDeliver", processFrom, message);
         int newts = message.getEcNewEpoch().getTimestamp();
         switch (message.getType()) {
             case EC_NEW_EPOCH_:
@@ -113,7 +113,7 @@ public class EC extends AbstractAlgorithm {
     }
 
     private void plDeliver(int systemId, ProcessId processFrom, Message message) {
-        this.displayExecution("PlDeliver", processFrom, message);
+        this.displayExecution(systemId, "PlDeliver", processFrom, message);
         switch (message.getType()) {
             case EC_NACK_:
                 if (trusted.equals(Process.getSelf())) {

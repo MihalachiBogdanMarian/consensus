@@ -33,7 +33,7 @@ public class BEB extends AbstractAlgorithm {
     }
 
     private void broadcast(int systemId, Message message) {
-        this.displayExecution("BebBroadcast", message);
+        this.displayExecution(systemId, "BebBroadcast", message);
         for (ProcessId process : Process.processes) {
             Process.systems.get(systemId).eventsQueue.insert(
                     Message.newBuilder()
@@ -54,7 +54,7 @@ public class BEB extends AbstractAlgorithm {
     }
 
     private void plDeliver(int systemId, ProcessId processFrom, Message message) {
-        this.displayExecution("PlDeliver", processFrom, message);
+        this.displayExecution(systemId, "PlDeliver", processFrom, message);
         switch (message.getType()) {
             case BEB_BROADCAST:
                 Process.systems.get(systemId).eventsQueue.insert(

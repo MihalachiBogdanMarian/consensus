@@ -23,7 +23,7 @@ public class PL extends AbstractAlgorithm {
                         message.getPlSend().getMessage().getType().equals(Message.Type.EP_ACCEPT_)
                 ) {
                     send(Integer.parseInt(message.getSystemId()),
-                            Integer.parseInt(message.getAbstractionId()),
+                            Integer.parseInt(message.getPlSend().getMessage().getAbstractionId()),
                             message.getPlSend().getReceiver(),
                             message.getPlSend().getMessage());
                 } else {
@@ -39,7 +39,7 @@ public class PL extends AbstractAlgorithm {
     }
 
     private void send(int systemId, int abstractionId, ProcessId processTo, Message message) {
-        this.displayExecution("PlSend", Process.getSelf(), processTo, message);
+        this.displayExecution(systemId, "PlSend", Process.getSelf(), processTo, message);
         Socket socket = null;
         try {
             socket = new Socket(processTo.getHost(), processTo.getPort());
@@ -63,7 +63,7 @@ public class PL extends AbstractAlgorithm {
     }
 
     private void send(int systemId, ProcessId processTo, Message message) {
-        this.displayExecution("PlSend", Process.getSelf(), processTo, message);
+        this.displayExecution(systemId, "PlSend", Process.getSelf(), processTo, message);
         Socket socket = null;
         try {
             socket = new Socket(processTo.getHost(), processTo.getPort());

@@ -19,7 +19,7 @@ public class Hub {
     private boolean running = false;
     private int nrProcesses = 0;
 
-    private static final int finalNrProcesses = 3;
+    protected static final int finalNrProcesses = 3;
     int[] ranks = new int[finalNrProcesses];
 
     public static final int nrSystems = 1;
@@ -44,7 +44,6 @@ public class Hub {
                 System.out.println("Waiting for a process...");
                 Socket socket = getHubSocket().accept();
                 System.out.println("A process is connected...");
-                this.setNrProcesses(this.getNrProcesses() + 1);
 
                 // read AppRegistration/AppDecide from process
                 Message message = Utilities.readMessage(socket.getInputStream());
