@@ -22,7 +22,7 @@ public class EP extends AbstractAlgorithm {
     private static boolean aborted;
 
     public EP(int ts, ProcessId l) {
-        this.setName("EP");
+        this.setName("EP." + ts);
         this.ts = ts;
         this.l = l;
     }
@@ -32,7 +32,8 @@ public class EP extends AbstractAlgorithm {
         switch (message.getType()) {
             case EP_INIT:
                 if (Integer.parseInt(message.getAbstractionId()) == ts) {
-                    init(new EpState(message.getEpInit().getValueTimestamp(), message.getEpInit().getValue()));
+                    init(Integer.parseInt(message.getSystemId())
+                            , new EpState(message.getEpInit().getValueTimestamp(), message.getEpInit().getValue()));
                     return true;
                 }
                 return false;
@@ -81,8 +82,8 @@ public class EP extends AbstractAlgorithm {
         return false;
     }
 
-    private void init(EpState state) {
-        this.displayExecution("EpInit");
+    private void init(int systemId, EpState state) {
+        this.displayExecution(systemId, "EpInit");
         valts = state.getTimestamp();
         val = state.getValue();
         tmpval = 0;
@@ -95,7 +96,7 @@ public class EP extends AbstractAlgorithm {
     }
 
     private void propose(int systemId, int v) {
-        this.displayExecution("EpPropose", v);
+        this.displayExecution(systemId, "EpPropose", v);
         tmpval = v;
         Process.systems.get(systemId).eventsQueue.insert(
                 Message.newBuilder()
@@ -114,7 +115,7 @@ public class EP extends AbstractAlgorithm {
     }
 
     private void bebDeliver(int systemId, ProcessId processFrom, Message message) {
-        this.displayExecution("BebDeliver", processFrom, message);
+        this.displayExecution(systemId, "BebDeliver", processFrom, message);
         switch (message.getType()) {
             case EP_READ_:
                 if (!aborted) {
@@ -141,7 +142,7 @@ public class EP extends AbstractAlgorithm {
                 break;
             case EP_WRITE_:
                 if (!aborted) {
-                    valts = Integer.parseInt(message.getAbstractionId());
+                    valts = ts;
                     val = message.getEpWrite().getValue();
                     Process.systems.get(systemId).eventsQueue.insert(
                             Message.newBuilder()
@@ -182,7 +183,7 @@ public class EP extends AbstractAlgorithm {
     }
 
     private void plDeliver(int systemId, ProcessId processFrom, Message message) {
-        this.displayExecution("PlDeliver", processFrom, message);
+        this.displayExecution(systemId, "PlDeliver", processFrom, message);
         switch (message.getType()) {
             case EP_STATE_:
                 if (!aborted) {
@@ -246,7 +247,7 @@ public class EP extends AbstractAlgorithm {
     }
 
     private void abort(int systemId) {
-        this.displayExecution("EpAbort", ts);
+        this.displayExecution(systemId, "EpAbort", ts);
 
         Process.systems.get(systemId).eventsQueue.insert(
                 Message.newBuilder()

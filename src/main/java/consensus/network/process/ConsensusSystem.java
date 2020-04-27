@@ -12,6 +12,8 @@ import java.util.Map;
 public class ConsensusSystem {
 
     public static int valueToPropose;
+    public static ProcessId leader;
+    public static ProcessId leader0;
     public static List<ProcessId> processes = new ArrayList<>(); // the processes involved
     public static Map<String, AbstractAlgorithm> algorithms = new HashMap<>(); // the algorithms involved
     public static Queue eventsQueue = new Queue(); // defines the events
@@ -27,4 +29,5 @@ public class ConsensusSystem {
             eventsQueue.deleteByCondition();
         }
     }
+
 }

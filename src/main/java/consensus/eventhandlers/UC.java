@@ -66,7 +66,7 @@ public class UC extends AbstractAlgorithm {
 
     @Override
     public void init(int systemId) {
-        this.displayExecution("UcInit");
+        this.displayExecution(systemId, "UcInit");
         val = 0;
         proposed = false;
         decided = false;
@@ -75,7 +75,7 @@ public class UC extends AbstractAlgorithm {
         // *** by calling before OmegaInit and EcInit ***
 
         // initialize a new instance ep.0 of epoch consensus with timestamp 0, leader ℓ0, and state (0,⊥)
-        Process.systems.get(systemId).algorithms.put("EP.0", new EP(0, Process.l0));
+        Process.systems.get(systemId).algorithms.put("EP.0", new EP(0, Process.systems.get(systemId).leader));
         Process.systems.get(systemId).eventsQueue.insert(
                 Message.newBuilder()
                         .setType(Message.Type.EP_INIT)
@@ -89,20 +89,20 @@ public class UC extends AbstractAlgorithm {
         );
 
         ets = 0;
-        Process.l = Process.l0;
+        Process.systems.get(systemId).leader = Process.systems.get(systemId).leader0;
         newts = 0;
         newl = null;
     }
 
     private void propose(int systemId, Integer v) {
-        this.displayExecution("UcPropose", v);
+        this.displayExecution(systemId, "UcPropose", v);
         val = v;
 
-//        specialMethod(systemId);
+        specialMethod(systemId);
     }
 
     private void EcStartEpoch(int systemId, int newtsP, ProcessId newlP) {
-        this.displayExecution("EcStartEpoch", newtsP, newlP);
+        this.displayExecution(systemId, "EcStartEpoch", newtsP, newlP);
         newts = newtsP;
         newl = newlP;
         Process.systems.get(systemId).eventsQueue.insert(
@@ -117,16 +117,16 @@ public class UC extends AbstractAlgorithm {
     }
 
     private void EpAborted(int systemId, int ts, EpState epState) {
-        this.displayExecution("Ep" + "." + ts + "Aborted", epState.getTimestamp(), epState.getValue());
+        this.displayExecution(systemId, "Ep" + "." + ts + "Aborted", epState.getTimestamp(), epState.getValue());
         ets = newts;
-        Process.l = newl;
+        Process.systems.get(systemId).leader = newl;
         proposed = false;
 
 //        specialMethod(systemId);
 
         // initialize a new instance ep.ets of epoch consensus with timestamp ets,
         // leader ℓ, and state state;
-        Process.systems.get(systemId).algorithms.put("EP." + ets, new EP(ets, Process.l));
+        Process.systems.get(systemId).algorithms.put("EP." + ets, new EP(ets, Process.systems.get(systemId).leader));
         Process.systems.get(systemId).eventsQueue.insert(
                 Message.newBuilder()
                         .setType(Message.Type.EP_INIT)
@@ -143,8 +143,8 @@ public class UC extends AbstractAlgorithm {
     }
 
     private void specialMethod(int systemId) {
-        this.displayExecution("l=self^val!=null^proposed=false");
-        if (Process.l.equals(Process.getSelf()) && val != 0 && !proposed) {
+        if (Process.systems.get(systemId).leader.equals(Process.getSelf()) && val != 0 && !proposed) {
+            this.displayExecution(systemId, "l=self^val!=null^proposed=false");
             proposed = true;
             Process.systems.get(systemId).eventsQueue.insert(
                     Message.newBuilder()
@@ -160,7 +160,7 @@ public class UC extends AbstractAlgorithm {
     }
 
     private void EpDecide(int systemId, int ts, int v) {
-        this.displayExecution("Ep" + "." + ts + "Decide", ts, v);
+        this.displayExecution(systemId, "Ep" + "." + ts + "Decide", ts, v);
         if (!decided) {
             decided = true;
             Process.systems.get(systemId).eventsQueue.insert(
@@ -177,7 +177,7 @@ public class UC extends AbstractAlgorithm {
     }
 
     private void decide(int systemId, int v) {
-        this.displayExecution("UcDecide", v);
+        this.displayExecution(systemId, "UcDecide", v);
         try {
             Process.hubSocket = new Socket(Process.HUB_ADDRESS, Process.HUB_PORT);
             OutputStream out = Process.hubSocket.getOutputStream();

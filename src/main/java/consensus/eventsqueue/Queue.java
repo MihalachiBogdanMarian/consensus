@@ -1,6 +1,5 @@
 package consensus.eventsqueue;
 
-import consensus.network.process.ConsensusSystem;
 import consensus.network.process.Process;
 import consensus.eventhandlers.AbstractAlgorithm;
 import consensus.protos.Consensus.Message;

@@ -15,7 +15,7 @@ public class OMEGA extends AbstractAlgorithm {
 
     public static int epoch; // how many times the process crashed and recovered
     public static LinkedList<AbstractMap.SimpleEntry<ProcessId, Integer>> candidates;
-    public final static int delta = 100; // milliseconds
+    public final static int delta = 1000; // milliseconds
     public static int delay;
 
     public OMEGA() {
@@ -46,25 +46,27 @@ public class OMEGA extends AbstractAlgorithm {
     }
 
     public void init(int systemId) {
-        this.displayExecution("OmegaInit");
+        this.displayExecution(systemId, "OmegaInit");
         epoch = 0;
-        Utilities.store(epoch, Process.fileName);
+        Utilities.store(epoch, Process.fileNames.get(systemId - 1));
         candidates = new LinkedList<>();
-        Process.systems.get(systemId).eventsQueue.insert(
-                Message.newBuilder()
-                        .setType(Message.Type.ELD_RECOVERY)
-                        .setSystemId(String.valueOf(systemId))
-                        .setEldRecovery(
-                                Consensus.EldRecovery.newBuilder()
-                                        .build()
-                        )
-                        .build()
-        );
+//        Process.systems.get(systemId).eventsQueue.insert(
+//                Message.newBuilder()
+//                        .setType(Message.Type.ELD_RECOVERY)
+//                        .setSystemId(String.valueOf(systemId))
+//                        .setEldRecovery(
+//                                Consensus.EldRecovery.newBuilder()
+//                                        .build()
+//                        )
+//                        .build()
+//        );
+        recovery(systemId);
     }
 
     private void recovery(int systemId) {
-        this.displayExecution("OmegaRecovery");
-        Process.l = Utilities.maxrank(Process.processes);
+        this.displayExecution(systemId, "OmegaRecovery");
+        Process.systems.get(systemId).leader0 = Utilities.maxrank(Process.processes);
+        Process.systems.get(systemId).leader = Utilities.maxrank(Process.processes);
 
         Process.systems.get(systemId).eventsQueue.insert(
                 Message.newBuilder()
@@ -72,7 +74,7 @@ public class OMEGA extends AbstractAlgorithm {
                         .setSystemId(String.valueOf(systemId))
                         .setEldTrust(
                                 Consensus.EldTrust.newBuilder()
-                                        .setProcessId(Process.l)
+                                        .setProcessId(Process.systems.get(systemId).leader)
                                         .build()
                         )
                         .build()
@@ -80,9 +82,9 @@ public class OMEGA extends AbstractAlgorithm {
 
         delay = delta;
 
-        epoch = Utilities.retrieve(Process.fileName);
+        epoch = Utilities.retrieve(Process.fileNames.get(systemId - 1));
         epoch++;
-        Utilities.store(epoch, Process.fileName);
+        Utilities.store(epoch, Process.fileNames.get(systemId - 1));
 
         for (ProcessId process : Process.processes) {
             Process.systems.get(systemId).eventsQueue.insert(
@@ -108,18 +110,18 @@ public class OMEGA extends AbstractAlgorithm {
     }
 
     private void timeout(int systemId) {
-        this.displayExecution("Timeout");
+        this.displayExecution(systemId, "Timeout");
         ProcessId newLeader = Utilities.select(candidates);
-        if (newLeader != null && !newLeader.equals(Process.l)) {
+        if (newLeader != null && !newLeader.equals(Process.systems.get(systemId).leader)) {
             delay += delta;
-            Process.l = newLeader;
+            Process.systems.get(systemId).leader = newLeader;
             Process.systems.get(systemId).eventsQueue.insert(
                     Message.newBuilder()
                             .setType(Message.Type.ELD_TRUST)
                             .setSystemId(String.valueOf(systemId))
                             .setEldTrust(
                                     Consensus.EldTrust.newBuilder()
-                                            .setProcessId(Process.l)
+                                            .setProcessId(Process.systems.get(systemId).leader)
                                             .build()
                             )
                             .build()
@@ -150,7 +152,7 @@ public class OMEGA extends AbstractAlgorithm {
     }
 
     private void plDeliver(int systemId, ProcessId processFrom, Message message) {
-        this.displayExecution("PlDeliver", processFrom, message);
+        this.displayExecution(systemId, "PlDeliver", processFrom, message);
         switch (message.getType()) {
             case ELD_HEARTBEAT_:
                 int exists = Utilities.exists(candidates, processFrom, message.getEldHeartbeat().getEpoch());

@@ -46,7 +46,7 @@ pl   PerfectLink (use TCP)
 // Data structures
 message ProcessId {
     string host = 1; // String containing either domain name  or IP (most likely)
-    int32  port = 2;
+    int32 port = 2;
     string owner = 3; // Short alias or acronym of the owner of the node
     int32 index = 4; // Node index within the owner's nodes. Must be 1, 2, or 3
     int32 rank = 5;
@@ -168,77 +168,77 @@ message Message {
     enum Type {
         NONE = 0;
 
-        APP_REGISTRATION =  5;
-        APP_PROPOSE      =  6;
-        APP_DECIDE       =  7;
+        APP_REGISTRATION = 5;
+        APP_PROPOSE = 6;
+        APP_DECIDE = 7;
 
-        BEB_BROADCAST    = 10;
-        BEB_DELIVER      = 11;
+        BEB_BROADCAST = 10;
+        BEB_DELIVER = 11;
 
-        EC_NACK_         = 12;
-        EC_NEW_EPOCH_    = 13;
-        EC_START_EPOCH   = 14;
+        EC_NACK_ = 12;
+        EC_NEW_EPOCH_ = 13;
+        EC_START_EPOCH = 14;
 
-        ELD_HEARTBEAT_   = 15;
-        ELD_RECOVERY     = 16;
-        ELD_TIMEOUT      = 17;
-        ELD_TRUST        = 18;
+        ELD_HEARTBEAT_ = 15;
+        ELD_RECOVERY = 16;
+        ELD_TIMEOUT = 17;
+        ELD_TRUST = 18;
 
-        EP_ABORT         = 19;
-        EP_ABORTED       = 20;
-        EP_ACCEPT_       = 21;
-        EP_DECIDE        = 22;
-        EP_DECIDED_      = 23;
-        EP_INIT          = 24;
-        EP_PROPOSE       = 25;
-        EP_READ_         = 26;
-        EP_STATE_        = 27;
-        EP_WRITE_        = 28;
+        EP_ABORT = 19;
+        EP_ABORTED = 20;
+        EP_ACCEPT_ = 21;
+        EP_DECIDE = 22;
+        EP_DECIDED_ = 23;
+        EP_INIT = 24;
+        EP_PROPOSE = 25;
+        EP_READ_ = 26;
+        EP_STATE_ = 27;
+        EP_WRITE_ = 28;
 
-        PL_DELIVER       = 29;
-        PL_SEND          = 30;
+        PL_DELIVER = 29;
+        PL_SEND = 30;
 
-        UC_DECIDE        = 31;
-        UC_PROPOSE       = 32;
+        UC_DECIDE = 31;
+        UC_PROPOSE = 32;
     }
 
-    Type            type                =  1;
-    string          messageUuid         =  2;
-    string          abstractionId       =  3;
-    string          systemId            =  4;
+    Type type = 1;
+    string messageUuid = 2;
+    string abstractionId = 3;
+    string systemId = 4;
 
-    AppRegistration appRegistration     =  5;
-    AppPropose      appPropose          =  6;
-    AppDecide       appDecide           =  7;
+    AppRegistration appRegistration = 5;
+    AppPropose appPropose = 6;
+    AppDecide appDecide = 7;
 
-    BebBroadcast    bebBroadcast        = 10;
-    BebDeliver      bebDeliver          = 11;
+    BebBroadcast bebBroadcast = 10;
+    BebDeliver bebDeliver = 11;
 
-    EcNack_         ecNack_             = 12;
-    EcNewEpoch_     ecNewEpoch_         = 13;
-    EcStartEpoch    ecStartEpoch        = 14;
+    EcNack_ ecNack_ = 12;
+    EcNewEpoch_ ecNewEpoch_ = 13;
+    EcStartEpoch ecStartEpoch = 14;
 
-    EldHeartbeat_   eldHeartbeat_       = 15;
-    EldRecovery     eldRecovery         = 16;
-    EldTimeout      eldTimeout          = 17;
-    EldTrust        eldTrust            = 18;
+    EldHeartbeat_ eldHeartbeat_ = 15;
+    EldRecovery eldRecovery = 16;
+    EldTimeout eldTimeout = 17;
+    EldTrust eldTrust = 18;
 
-    EpAbort         epAbort             = 19;
-    EpAborted       epAborted           = 20;
-    EpAccept_       epAccept_           = 21;
-    EpDecide        epDecide            = 22;
-    EpDecided_      epDecided_          = 23;
-    EpInit          epInit              = 24;
-    EpPropose       epPropose           = 25;
-    EpRead_         epRead_             = 26;
-    EpState_        epState_            = 27;
-    EpWrite_        epWrite_            = 28;
+    EpAbort epAbort = 19;
+    EpAborted epAborted = 20;
+    EpAccept_ epAccept_ = 21;
+    EpDecide epDecide = 22;
+    EpDecided_ epDecided_ = 23;
+    EpInit epInit = 24;
+    EpPropose epPropose = 25;
+    EpRead_ epRead_ = 26;
+    EpState_ epState_ = 27;
+    EpWrite_ epWrite_ = 28;
 
-    PlDeliver       plDeliver           = 29;
-    PlSend          plSend              = 30;
+    PlDeliver plDeliver = 29;
+    PlSend plSend = 30;
 
-    UcDecide        ucDecide            = 31;
-    UcPropose       ucPropose           = 32;
+    UcDecide ucDecide = 31;
+    UcPropose ucPropose = 32;
 }
 /*
 MyMessage m = ....;

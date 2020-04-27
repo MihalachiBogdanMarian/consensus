@@ -19,14 +19,11 @@ public class Process {
     public static String owner;
     public static String address;
     public static int port;
-    public static String fileName = "";
+    public static List<String> fileNames = new ArrayList<>();
 
     public final static String HUB_ADDRESS = "127.0.0.1";
     public final static int HUB_PORT = 8100;
     public static volatile Socket hubSocket;
-
-    public static ProcessId l0;
-    public static ProcessId l;
 
     public Process() {
         try {
@@ -77,20 +74,27 @@ public class Process {
             systems.put(Integer.parseInt(appPropose.getSystemId()),
                     new ConsensusSystem(appPropose.getAppPropose().getValue(), processes, algorithms));
         }
-//        System.out.println(systems);
-//        System.out.println(processes);
+        System.out.println(systems);
+        System.out.println(processes);
 
         List<ProcessId> processes = appProposes.get(0).getAppPropose().getProcessesList();
-        fileName = "..\\consensus\\src\\main\\resources\\recovery" + Utilities.rank(processes, getSelf()) + ".txt";
-        l0 = Utilities.maxrank(processes);
-        l = l0;
+        for (Map.Entry<Integer, ConsensusSystem> entry : systems.entrySet()) {
+            fileNames.add("..\\consensus\\src\\main\\resources\\recovery" + entry.getKey() + "." + Utilities.rank(processes, getSelf()) + ".txt");
+        }
 
         // listening for messages from other processes
         NetworkListener networkListener = new NetworkListener("NetworkListener", port);
         networkListener.start();
 
+        // Events Queue - listening for events <-> messages and handling them in order
+        EventsThread eventsThread = new EventsThread("EventsThread");
+        eventsThread.start();
+
         // start the algorithms
         for (Map.Entry<Integer, ConsensusSystem> entry : systems.entrySet()) {
+            entry.getValue().algorithms.get("OMEGA").init(entry.getKey());
+            entry.getValue().algorithms.get("EC").init(entry.getKey());
+            entry.getValue().algorithms.get("UC").init(entry.getKey());
             entry.getValue().eventsQueue.insert(Message.newBuilder()
                     .setSystemId(String.valueOf(entry.getKey()))
                     .setType(Message.Type.UC_PROPOSE)
@@ -98,14 +102,7 @@ public class Process {
                             .setValue(entry.getValue().valueToPropose)
                             .build())
                     .build());
-            entry.getValue().algorithms.get("OMEGA").init(entry.getKey());
-            entry.getValue().algorithms.get("EC").init(entry.getKey());
-            entry.getValue().algorithms.get("UC").init(entry.getKey());
         }
-
-        // Events Queue - listening for events <-> messages and handling them in order
-        EventsThread eventsThread = new EventsThread("EventsThread");
-        eventsThread.start();
     }
 
     public static ProcessId getSelf() {
