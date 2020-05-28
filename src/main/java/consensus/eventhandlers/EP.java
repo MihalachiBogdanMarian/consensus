@@ -30,40 +30,41 @@ public class EP extends AbstractAlgorithm {
 
     @Override
     public boolean handle(Message message) {
-        switch (message.getType()) {
-            case EP_PROPOSE:
-                if (message.getAbstractionId().equals("ep" + ts)) {
-                    propose(message.getSystemId(),
-                            message.getEpPropose().getValue());
-                    return true;
-                }
-                return false;
-            case BEB_DELIVER:
-                if (message.getAbstractionId().equals("ep" + ts)) {
-                    bebDeliver(message.getSystemId(),
-                            message.getBebDeliver().getSender(),
-                            message.getBebDeliver().getMessage());
-                    return true;
-                }
-                return false;
-            case PL_DELIVER:
-                if (message.getAbstractionId().equals("ep" + ts)) {
-                    plDeliver(message.getSystemId(),
-                            message.getPlDeliver().getSender(),
-                            message.getPlDeliver().getMessage());
-                    return true;
-                }
-                return false;
-            case EP_ABORT:
-                if (message.getAbstractionId().equals("ep" + ts)) {
-                    abort(message.getSystemId());
-                    return true;
-                }
-                return false;
-            default:
-                break;
+        if (message.getSystemId().equals(Process.currentSystem)) {
+            switch (message.getType()) {
+                case EP_PROPOSE:
+                    if (message.getAbstractionId().equals("ep" + ts)) {
+                        propose(message.getSystemId(),
+                                message.getEpPropose().getValue());
+                        return true;
+                    }
+                    return false;
+                case BEB_DELIVER:
+                    if (message.getAbstractionId().equals("ep" + ts)) {
+                        bebDeliver(message.getSystemId(),
+                                message.getBebDeliver().getSender(),
+                                message.getBebDeliver().getMessage());
+                        return true;
+                    }
+                    return false;
+                case PL_DELIVER:
+                    if (message.getAbstractionId().equals("ep" + ts)) {
+                        plDeliver(message.getSystemId(),
+                                message.getPlDeliver().getSender(),
+                                message.getPlDeliver().getMessage());
+                        return true;
+                    }
+                    return false;
+                case EP_ABORT:
+                    if (message.getAbstractionId().equals("ep" + ts)) {
+                        abort(message.getSystemId());
+                        return true;
+                    }
+                    return false;
+                default:
+                    break;
+            }
         }
-
         return false;
     }
 

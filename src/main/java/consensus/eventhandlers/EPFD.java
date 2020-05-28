@@ -21,20 +21,22 @@ public class EPFD extends AbstractAlgorithm {
 
     @Override
     public boolean handle(Message message) {
-        switch (message.getType()) {
-            case EPFD_TIMEOUT:
-                timeout(message.getSystemId());
-                return true;
-            case PL_DELIVER:
-                if (message.getAbstractionId().equals("epfd")) {
-                    plDeliver(message.getSystemId(),
-                            message.getPlDeliver().getSender(),
-                            message.getPlDeliver().getMessage());
+        if (message != null && message.getSystemId().equals(Process.currentSystem)) {
+            switch (message.getType()) {
+                case EPFD_TIMEOUT:
+                    timeout(message.getSystemId());
                     return true;
-                }
-                return false;
-            default:
-                break;
+                case PL_DELIVER:
+                    if (message.getAbstractionId().equals("epfd")) {
+                        plDeliver(message.getSystemId(),
+                                message.getPlDeliver().getSender(),
+                                message.getPlDeliver().getMessage());
+                        return true;
+                    }
+                    return false;
+                default:
+                    break;
+            }
         }
         return false;
     }

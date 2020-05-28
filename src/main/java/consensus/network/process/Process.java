@@ -13,6 +13,7 @@ public class Process {
 
     public static volatile Map<String, ConsensusSystem> systems = new LinkedHashMap<>();
     public static List<ProcessId> processes = new ArrayList<>();
+    public static String currentSystem;
 
     public static String owner;
     public static String address;

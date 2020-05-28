@@ -28,40 +28,42 @@ public class UC extends AbstractAlgorithm {
 
     @Override
     public boolean handle(Message message) {
-        switch (message.getType()) {
-            case UC_PROPOSE:
-                propose(message.getSystemId(),
-                        message.getUcPropose().getValue().getV());
-                return true;
-            case EC_START_EPOCH:
-                EcStartEpoch(message.getSystemId(),
-                        message.getEcStartEpoch().getNewTimestamp(),
-                        message.getEcStartEpoch().getNewLeader());
-                return true;
-            case EP_ABORTED:
-                if (message.getEpAborted().getEts() == ets) {
-                    EpAborted(message.getSystemId(),
-                            message.getEpAborted().getEts(),
-                            new EpState(message.getEpAborted().getValueTimestamp(), message.getEpAborted().getValue()));
+        if (message.getSystemId().equals(Process.currentSystem)) {
+            switch (message.getType()) {
+                case UC_PROPOSE:
+                    propose(message.getSystemId(),
+                            message.getUcPropose().getValue().getV());
                     return true;
-                } else {
-                    return false;
-                }
-            case EP_DECIDE:
-                if (message.getEpDecide().getEts() == ets) {
-                    EpDecide(message.getSystemId(),
-                            message.getEpAborted().getEts(),
-                            message.getEpDecide().getValue().getV());
+                case EC_START_EPOCH:
+                    EcStartEpoch(message.getSystemId(),
+                            message.getEcStartEpoch().getNewTimestamp(),
+                            message.getEcStartEpoch().getNewLeader());
                     return true;
-                } else {
-                    return false;
-                }
-            case UC_DECIDE:
-                decide(message.getSystemId(),
-                        message.getUcDecide().getValue().getV());
-                return true;
-            default:
-                break;
+                case EP_ABORTED:
+                    if (message.getEpAborted().getEts() == ets) {
+                        EpAborted(message.getSystemId(),
+                                message.getEpAborted().getEts(),
+                                new EpState(message.getEpAborted().getValueTimestamp(), message.getEpAborted().getValue()));
+                        return true;
+                    } else {
+                        return false;
+                    }
+                case EP_DECIDE:
+                    if (message.getEpDecide().getEts() == ets) {
+                        EpDecide(message.getSystemId(),
+                                message.getEpAborted().getEts(),
+                                message.getEpDecide().getValue().getV());
+                        return true;
+                    } else {
+                        return false;
+                    }
+                case UC_DECIDE:
+                    decide(message.getSystemId(),
+                            message.getUcDecide().getValue().getV());
+                    return true;
+                default:
+                    break;
+            }
         }
         return false;
     }
@@ -186,13 +188,13 @@ public class UC extends AbstractAlgorithm {
                                     ).build())
                     .build());
 
-//            Timer timer = new Timer();
-//            timer.schedule(new TimerTask() {
-//                @Override
-//                public void run() {
-//                    Process.systems.get(systemId).stop = true;
-//                }
-//            }, 5000);
+            Timer timer = new Timer();
+            timer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    Process.systems.get(systemId).stop = true;
+                }
+            }, 5000);
 
             out.flush();
         } catch (IOException e) {

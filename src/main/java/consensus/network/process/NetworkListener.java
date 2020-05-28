@@ -55,6 +55,7 @@ public class NetworkListener extends Thread {
                     algorithms.put("PL", new PL());
                     Process.systems.put(message.getSystemId(),
                             new ConsensusSystem(appPropose.getAppPropose().getValue().getV(), Process.processes, algorithms));
+                    Process.currentSystem = message.getSystemId();
 
                     System.out.println(Process.systems.get(message.getSystemId()));
 
@@ -77,21 +78,23 @@ public class NetworkListener extends Thread {
                             .build());
 
                     // Events Queue - listening for events <-> messages and handling them in order
-                    EventsThread eventsThread = new EventsThread("EventsThread", message.getSystemId());
+                    EventsThread eventsThread = new EventsThread("EventsThread-" + message.getSystemId(), message.getSystemId());
                     eventsThread.start();
 
                 } else {
-                    // received a message from a process
-                    Process.systems.get(message.getSystemId()).eventsQueue.add(
-                            Message.newBuilder().setType(Message.Type.PL_DELIVER)
-                                    .setSystemId(message.getSystemId())
-                                    .setAbstractionId(message.getAbstractionId())
-                                    .setPlDeliver(Consensus.PlDeliver.newBuilder()
-                                            .setSender(Utilities.getProcessByAddress(Process.processes, message.getNetworkMessage().getSenderHost(), message.getNetworkMessage().getSenderListeningPort()))
-                                            .setMessage(message.getNetworkMessage().getMessage())
-                                            .build())
-                                    .build()
-                    );
+                    if (message.getSystemId().equals(Process.currentSystem)) {
+                        // received a message from a process
+                        Process.systems.get(message.getSystemId()).eventsQueue.add(
+                                Message.newBuilder().setType(Message.Type.PL_DELIVER)
+                                        .setSystemId(message.getSystemId())
+                                        .setAbstractionId(message.getAbstractionId())
+                                        .setPlDeliver(Consensus.PlDeliver.newBuilder()
+                                                .setSender(Utilities.getProcessByAddress(Process.processes, message.getNetworkMessage().getSenderHost(), message.getNetworkMessage().getSenderListeningPort()))
+                                                .setMessage(message.getNetworkMessage().getMessage())
+                                                .build())
+                                        .build()
+                        );
+                    }
                 }
 //                System.out.println(message);
 
