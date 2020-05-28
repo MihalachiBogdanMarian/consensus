@@ -1,19 +1,22 @@
 package consensus.network.process;
 
-import java.util.Map;
-
 public class EventsThread extends Thread {
     private Thread t;
     private String threadName;
+    private String systemId;
 
-    public EventsThread(String threadName) {
+    public EventsThread(String threadName, String systemId) {
         this.threadName = threadName;
+        this.systemId = systemId;
     }
 
     public void run() {
+        ConsensusSystem consensusSystem = null;
         while (true) {
-            for (Map.Entry<Integer, ConsensusSystem> entry : Process.systems.entrySet()) { // for each system
-                entry.getValue().eventLoop(); // check the events queue
+            consensusSystem = Process.systems.get(systemId); // for the thread's system
+            consensusSystem.eventLoop(); // check the events queue
+            if (Process.systems.get(systemId).stop) {
+                break;
             }
         }
     }

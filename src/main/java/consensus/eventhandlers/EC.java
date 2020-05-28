@@ -4,7 +4,6 @@ import consensus.network.process.Process;
 import consensus.protos.Consensus;
 import consensus.protos.Consensus.ProcessId;
 import consensus.protos.Consensus.Message;
-import consensus.utilities.Utilities;
 
 public class EC extends AbstractAlgorithm {
 
@@ -20,20 +19,20 @@ public class EC extends AbstractAlgorithm {
     public boolean handle(Message message) {
         switch (message.getType()) {
             case ELD_TRUST:
-                omegaTrust(Integer.valueOf(message.getSystemId()),
-                        message.getEldTrust().getProcessId());
+                omegaTrust(message.getSystemId(),
+                        message.getEldTrust().getProcess());
                 return true;
             case BEB_DELIVER:
-                if (message.getBebDeliver().getMessage().getType().equals(Message.Type.EC_NEW_EPOCH_)) {
-                    bebDeliver(Integer.valueOf(message.getSystemId()),
+                if (message.getAbstractionId().equals("ec")) {
+                    bebDeliver(message.getSystemId(),
                             message.getBebDeliver().getSender(),
                             message.getBebDeliver().getMessage());
                     return true;
                 }
                 return false;
             case PL_DELIVER:
-                if (message.getPlDeliver().getMessage().getType().equals(Message.Type.EC_NACK_)) {
-                    plDeliver(Integer.valueOf(message.getSystemId()),
+                if (message.getAbstractionId().equals("ec")) {
+                    plDeliver(message.getSystemId(),
                             message.getPlDeliver().getSender(),
                             message.getPlDeliver().getMessage());
                     return true;
@@ -45,25 +44,27 @@ public class EC extends AbstractAlgorithm {
         return false;
     }
 
-    public void init(int systemId) {
+    public void init(String systemId) {
         this.displayExecution(systemId, "EcInit");
-        trusted = Process.systems.get(systemId).leader0;
+        trusted = Process.systems.get(systemId).leader;
         lastts = 0;
-        ts = Utilities.rank(Process.processes, Process.getSelf());
+        ts = Process.getSelf().getRank();
     }
 
-    private void omegaTrust(int systemId, ProcessId process) {
+    private void omegaTrust(String systemId, ProcessId process) {
         this.displayExecution(systemId, "OmegaTrust", process);
         trusted = process;
         if (process.equals(Process.getSelf())) {
             ts += Process.processes.size();
-            Process.systems.get(systemId).eventsQueue.insert(
+            Process.systems.get(systemId).eventsQueue.add(
                     Message.newBuilder()
                             .setType(Message.Type.BEB_BROADCAST)
-                            .setSystemId(String.valueOf(systemId))
+                            .setSystemId(systemId)
+                            .setAbstractionId("beb")
                             .setBebBroadcast(Consensus.BebBroadcast.newBuilder().setMessage(Message.newBuilder()
                                             .setType(Message.Type.EC_NEW_EPOCH_)
-                                            .setSystemId(String.valueOf(systemId))
+                                            .setSystemId(systemId)
+                                            .setAbstractionId("ec")
                                             .setEcNewEpoch(Consensus.EcNewEpoch_.newBuilder().setTimestamp(ts).build())
                                             .build()
                                     ).build()
@@ -72,17 +73,18 @@ public class EC extends AbstractAlgorithm {
         }
     }
 
-    private void bebDeliver(int systemId, ProcessId processFrom, Message message) {
+    private void bebDeliver(String systemId, ProcessId processFrom, Message message) {
         this.displayExecution(systemId, "BebDeliver", processFrom, message);
         int newts = message.getEcNewEpoch().getTimestamp();
         switch (message.getType()) {
             case EC_NEW_EPOCH_:
                 if (processFrom.equals(trusted) && newts > lastts) {
                     lastts = newts;
-                    Process.systems.get(systemId).eventsQueue.insert(
+                    Process.systems.get(systemId).eventsQueue.add(
                             Message.newBuilder()
                                     .setType(Message.Type.EC_START_EPOCH)
-                                    .setSystemId(String.valueOf(systemId))
+                                    .setSystemId(systemId)
+                                    .setAbstractionId("uc")
                                     .setEcStartEpoch(Consensus.EcStartEpoch.newBuilder()
                                             .setNewTimestamp(newts)
                                             .setNewLeader(processFrom)
@@ -90,18 +92,20 @@ public class EC extends AbstractAlgorithm {
                                     .build()
                     );
                 } else {
-                    Process.systems.get(systemId).eventsQueue.insert(
+                    Process.systems.get(systemId).eventsQueue.add(
                             Message.newBuilder()
                                     .setType(Message.Type.PL_SEND)
-                                    .setSystemId(String.valueOf(systemId))
+                                    .setSystemId(systemId)
+                                    .setAbstractionId("ec")
                                     .setPlSend(Consensus.PlSend.newBuilder()
                                             .setMessage(Message.newBuilder()
                                                     .setType(Message.Type.EC_NACK_)
-                                                    .setSystemId(String.valueOf(systemId))
+                                                    .setSystemId(systemId)
+                                                    .setAbstractionId("ec")
                                                     .setEcNack(Consensus.EcNack_.newBuilder()
                                                             .build())
                                                     .build())
-                                            .setReceiver(processFrom)
+                                            .setDestination(processFrom)
                                             .build())
                                     .build()
                     );
@@ -112,19 +116,21 @@ public class EC extends AbstractAlgorithm {
         }
     }
 
-    private void plDeliver(int systemId, ProcessId processFrom, Message message) {
+    private void plDeliver(String systemId, ProcessId processFrom, Message message) {
         this.displayExecution(systemId, "PlDeliver", processFrom, message);
         switch (message.getType()) {
             case EC_NACK_:
                 if (trusted.equals(Process.getSelf())) {
                     ts += Process.processes.size();
-                    Process.systems.get(systemId).eventsQueue.insert(
+                    Process.systems.get(systemId).eventsQueue.add(
                             Message.newBuilder()
                                     .setType(Message.Type.BEB_BROADCAST)
-                                    .setSystemId(String.valueOf(systemId))
+                                    .setSystemId(systemId)
+                                    .setAbstractionId("beb")
                                     .setBebBroadcast(Consensus.BebBroadcast.newBuilder().setMessage(Message.newBuilder()
                                                     .setType(Message.Type.EC_NEW_EPOCH_)
-                                                    .setSystemId(String.valueOf(systemId))
+                                                    .setSystemId(systemId)
+                                                    .setAbstractionId("ec")
                                                     .setEcNewEpoch(Consensus.EcNewEpoch_.newBuilder().setTimestamp(ts).build())
                                                     .build()
                                             ).build()

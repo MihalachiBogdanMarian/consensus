@@ -1,12 +1,12 @@
 package consensus.utilities;
 
+import com.google.common.collect.Sets;
 import consensus.eventhandlers.EpState;
 import consensus.protos.Consensus.ProcessId;
 import consensus.protos.Consensus.Message;
 
 import java.io.*;
 import java.util.*;
-import java.util.AbstractMap.SimpleEntry;
 
 public class Utilities {
 
@@ -28,15 +28,6 @@ public class Utilities {
         );
     }
 
-    public static int rank(List<ProcessId> processes, ProcessId process) {
-        for (ProcessId p : processes) {
-            if (p.equals(process)) {
-                return p.getRank();
-            }
-        }
-        return 0;
-    }
-
     public static ProcessId maxrank(List<ProcessId> processes) {
         ProcessId maxProcess = processes.get(0);
         for (ProcessId process : processes) {
@@ -45,6 +36,31 @@ public class Utilities {
             }
         }
         return maxProcess;
+    }
+
+    public static ProcessId maxrankWithoutSuspected(List<ProcessId> processes, Set<ProcessId> suspected) {
+        Set processesWithoutSuspected = Sets.difference(new HashSet<>(processes), suspected);
+        ProcessId maxProcess = ProcessId.newBuilder().setRank(0).build();
+        if (!processesWithoutSuspected.isEmpty()) {
+            Iterator<ProcessId> it = processesWithoutSuspected.iterator();
+            while (it.hasNext()) {
+                ProcessId process = it.next();
+                if (process.getRank() > maxProcess.getRank()) {
+                    maxProcess = process;
+                }
+            }
+            return maxProcess;
+        }
+        return null;
+    }
+
+    public static ProcessId getProcessByAddress(List<ProcessId> processes, String senderHost, int senderListeningPort) {
+        for (ProcessId process : processes) {
+            if (process.getHost().equals(senderHost) && process.getPort() == senderListeningPort) {
+                return process;
+            }
+        }
+        return null;
     }
 
     public static void store(int value, String filename) {
@@ -81,19 +97,14 @@ public class Utilities {
         return value;
     }
 
-    public static void writeProcess(OutputStream out, ProcessId process) {
-        try {
-            byte[] processIdBytes = process.toByteArray();
-            out.write(intToBytes(processIdBytes.length), 0, Integer.SIZE / Byte.SIZE);
-            out.write(processIdBytes, 0, processIdBytes.length);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     public static void writeMessage(OutputStream out, Message message) {
         try {
             byte[] messageBytes = message.toByteArray();
+
+//            String result = convertBytesToHexString(intToBytes(messageBytes.length));
+//            result += convertBytesToHexString(messageBytes);
+//            System.out.println(result);
+
             out.write(intToBytes(messageBytes.length), 0, Integer.SIZE / Byte.SIZE);
             out.write(messageBytes, 0, messageBytes.length);
         } catch (IOException e) {
@@ -101,17 +112,18 @@ public class Utilities {
         }
     }
 
-    public static ProcessId readProcess(InputStream in) {
-        try {
-            byte[] lengthBytes = new byte[Integer.SIZE / Byte.SIZE];
-            in.read(lengthBytes, 0, Integer.SIZE / Byte.SIZE);
-            byte[] processIdBytes = new byte[bytesToInt(lengthBytes)];
-            in.read(processIdBytes, 0, bytesToInt(lengthBytes));
-            return ProcessId.parseFrom(processIdBytes);
-        } catch (IOException e) {
-            e.printStackTrace();
+    public static String convertBytesToHexString(byte[] bytes) {
+        StringBuilder result = new StringBuilder();
+        for (byte temp : bytes) {
+            int decimal = (int) temp & 0xff;  // bytes widen to int, need mask, prevent sign extension
+            String hex = Integer.toHexString(decimal);
+            if (hex.length() == 1) {
+                result.append("0" + hex);
+            } else {
+                result.append(hex);
+            }
         }
-        return null;
+        return result.toString();
     }
 
     public static Message readMessage(InputStream in) {
@@ -125,70 +137,6 @@ public class Utilities {
             e.printStackTrace();
         }
         return null;
-    }
-
-    public static ProcessId select(LinkedList<SimpleEntry<ProcessId, Integer>> candidates) {
-        // select the max rank process from the ones with the minimum epoch timestamp
-        // because they were inserted such that it keeps the order, we need to get the first element
-        if (candidates.isEmpty()) {
-            return null;
-        }
-        return candidates.get(0).getKey();
-    }
-
-    public static Integer exists(LinkedList<SimpleEntry<ProcessId, Integer>> candidates, ProcessId process, Integer value) {
-        for (SimpleEntry<ProcessId, Integer> simpleEntry : candidates) {
-            if (simpleEntry.getKey().equals(process) && simpleEntry.getValue() < value) {
-                return simpleEntry.getValue();
-            }
-        }
-        return -1;
-    }
-
-    public static boolean addInOrder(List<ProcessId> processes, LinkedList<SimpleEntry<ProcessId, Integer>> linkedList, ProcessId process, Integer value) {
-        ListIterator<SimpleEntry<ProcessId, Integer>> listIterator = linkedList.listIterator();
-
-        while (listIterator.hasNext()) {
-            int comparison = compareTo(processes, listIterator.next(), new SimpleEntry<>(process, value));
-            if (comparison == 0) {
-                // equal, do not add
-                return false;
-            } else if (comparison > 0) {
-                // new element should appear before this one
-                listIterator.previous();
-                listIterator.add(new SimpleEntry<>(process, value));
-                return true;
-            } else {
-                // move on to the next element
-            }
-        }
-
-        listIterator.add(new SimpleEntry<>(process, value));
-        return true;
-    }
-
-    private static int compareTo(List<ProcessId> processes, SimpleEntry<ProcessId, Integer> simpleEntry1, SimpleEntry<ProcessId, Integer> simpleEntry2) {
-        if (Utilities.rank(processes, simpleEntry1.getKey()) == Utilities.rank(processes, simpleEntry2.getKey())
-                && simpleEntry1.getValue().equals(simpleEntry2.getValue())) {
-            return 0;
-        } else if ((simpleEntry1.getValue() > simpleEntry2.getValue()) ||
-                (simpleEntry1.getValue().equals(simpleEntry2.getValue())
-                        && Utilities.rank(processes, simpleEntry1.getKey()) < Utilities.rank(processes, simpleEntry2.getKey()))) {
-            return 1;
-        } else if ((simpleEntry1.getValue() < simpleEntry2.getValue()) ||
-                (simpleEntry1.getValue().equals(simpleEntry2.getValue())
-                        && Utilities.rank(processes, simpleEntry1.getKey()) > Utilities.rank(processes, simpleEntry2.getKey()))) {
-            return -1;
-        }
-        return 0;
-    }
-
-    public static void printList(LinkedList<SimpleEntry<ProcessId, Integer>> linkedList) {
-        Iterator<SimpleEntry<ProcessId, Integer>> i = linkedList.iterator();
-        while (i.hasNext()) {
-            SimpleEntry<ProcessId, Integer> se = i.next();
-            System.out.println(se.getKey().getIndex() + " <---> " + se.getValue());
-        }
     }
 
     public static int hashtag(Map<ProcessId, EpState> states) {

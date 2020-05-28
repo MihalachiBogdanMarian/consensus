@@ -2,7 +2,6 @@ package consensus.eventhandlers;
 
 import consensus.network.process.Process;
 import consensus.protos.Consensus;
-import consensus.protos.Consensus.ProcessId;
 import consensus.protos.Consensus.Message;
 import consensus.utilities.Utilities;
 
@@ -19,18 +18,11 @@ public class PL extends AbstractAlgorithm {
     public boolean handle(Message message) {
         switch (message.getType()) {
             case PL_SEND:
-                if (message.getPlSend().getMessage().getType().equals(Message.Type.EP_STATE_) ||
-                        message.getPlSend().getMessage().getType().equals(Message.Type.EP_ACCEPT_)
-                ) {
-                    send(Integer.parseInt(message.getSystemId()),
-                            Integer.parseInt(message.getPlSend().getMessage().getAbstractionId()),
-                            message.getPlSend().getReceiver(),
-                            message.getPlSend().getMessage());
-                } else {
-                    send(Integer.parseInt(message.getSystemId()),
-                            message.getPlSend().getReceiver(),
-                            message.getPlSend().getMessage());
-                }
+                send(message.getSystemId(),
+                        message.getAbstractionId(),
+                        message.getPlSend().getDestination().getHost(),
+                        message.getPlSend().getDestination().getPort(),
+                        message.getPlSend().getMessage());
                 return true;
             default:
                 break;
@@ -38,46 +30,22 @@ public class PL extends AbstractAlgorithm {
         return false;
     }
 
-    private void send(int systemId, int abstractionId, ProcessId processTo, Message message) {
-        this.displayExecution(systemId, "PlSend", Process.getSelf(), processTo, message);
+    private void send(String systemId, String abstractionId, String senderHost, int senderListeningPort, Message message) {
+        this.displayExecution(systemId, "PlSend", Process.getSelf(), Utilities.getProcessByAddress(Process.processes, senderHost, senderListeningPort), message);
         Socket socket = null;
         try {
-            socket = new Socket(processTo.getHost(), processTo.getPort());
+            socket = new Socket(senderHost, senderListeningPort);
 
-            Utilities.writeMessage(socket.getOutputStream(),
-                    Message.newBuilder()
-                            .setType(Message.Type.PL_DELIVER)
-                            .setSystemId(String.valueOf(systemId))
-                            .setAbstractionId(String.valueOf(abstractionId))
-                            .setPlDeliver(Consensus.PlDeliver.newBuilder()
-                                    .setSender(Process.getSelf())
-                                    .setMessage(message)
-                                    .build())
-                            .build()
-            );
-
-            socket.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void send(int systemId, ProcessId processTo, Message message) {
-        this.displayExecution(systemId, "PlSend", Process.getSelf(), processTo, message);
-        Socket socket = null;
-        try {
-            socket = new Socket(processTo.getHost(), processTo.getPort());
-
-            Utilities.writeMessage(socket.getOutputStream(),
-                    Message.newBuilder()
-                            .setType(Message.Type.PL_DELIVER)
-                            .setSystemId(String.valueOf(systemId))
-                            .setPlDeliver(Consensus.PlDeliver.newBuilder()
-                                    .setSender(Process.getSelf())
-                                    .setMessage(message)
-                                    .build())
-                            .build()
-            );
+            Utilities.writeMessage(socket.getOutputStream(), Message.newBuilder()
+                    .setType(Message.Type.NETWORK_MESSAGE)
+                    .setSystemId(systemId)
+                    .setAbstractionId(abstractionId)
+                    .setNetworkMessage(
+                            Consensus.NetworkMessage.newBuilder()
+                                    .setSenderHost(Process.getSelf().getHost())
+                                    .setSenderListeningPort(Process.getSelf().getPort())
+                                    .setMessage(message).build())
+                    .build());
 
             socket.close();
         } catch (IOException e) {

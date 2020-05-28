@@ -1,5 +1,11 @@
 import basics.ListPeople;
+import consensus.protos.Consensus;
 import consensus.utilities.Utilities;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class Main {
 
@@ -12,7 +18,7 @@ public class Main {
 //    }};
 
     public static void main(String[] args) {
-
+        System.out.println("ep0".split("ep")[1]);
 //        EventsThread eventsThread = new EventsThread("EventsThread");
 //        eventsThread.start();
 //
