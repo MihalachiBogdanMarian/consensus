@@ -15,12 +15,12 @@ public class BEB extends AbstractAlgorithm {
     public boolean handle(Message message) {
         switch (message.getType()) {
             case BEB_BROADCAST:
-                broadcast(Integer.parseInt(message.getSystemId()),
+                broadcast(message.getSystemId(),
                         message.getBebBroadcast().getMessage());
                 return true;
             case PL_DELIVER:
-                if (message.getPlDeliver().getMessage().getType().equals(Message.Type.BEB_BROADCAST)) {
-                    plDeliver(Integer.valueOf(message.getSystemId()),
+                if (message.getAbstractionId().equals("beb")) {
+                    plDeliver(message.getSystemId(),
                             message.getPlDeliver().getSender(),
                             message.getPlDeliver().getMessage());
                     return true;
@@ -32,45 +32,36 @@ public class BEB extends AbstractAlgorithm {
         return false;
     }
 
-    private void broadcast(int systemId, Message message) {
+    private void broadcast(String systemId, Message message) {
         this.displayExecution(systemId, "BebBroadcast", message);
         for (ProcessId process : Process.processes) {
-            Process.systems.get(systemId).eventsQueue.insert(
+            Process.systems.get(systemId).eventsQueue.add(
                     Message.newBuilder()
                             .setType(Message.Type.PL_SEND)
-                            .setSystemId(String.valueOf(systemId))
+                            .setSystemId(systemId)
+                            .setAbstractionId("beb")
                             .setPlSend(Consensus.PlSend.newBuilder()
-                                    .setMessage(
-                                            Message.newBuilder()
-                                                    .setType(Message.Type.BEB_BROADCAST)
-                                                    .setSystemId(String.valueOf(systemId))
-                                                    .setBebBroadcast(Consensus.BebBroadcast.newBuilder().setMessage(message).build())
-                                                    .build())
-                                    .setReceiver(process)
+                                    .setMessage(message)
+                                    .setDestination(process)
                                     .build())
                             .build()
             );
         }
     }
 
-    private void plDeliver(int systemId, ProcessId processFrom, Message message) {
+    private void plDeliver(String systemId, ProcessId processFrom, Message message) {
         this.displayExecution(systemId, "PlDeliver", processFrom, message);
-        switch (message.getType()) {
-            case BEB_BROADCAST:
-                Process.systems.get(systemId).eventsQueue.insert(
-                        Message.newBuilder()
-                                .setType(Message.Type.BEB_DELIVER)
-                                .setSystemId(String.valueOf(systemId))
-                                .setBebDeliver(Consensus.BebDeliver.newBuilder()
-                                        .setSender(processFrom)
-                                        .setMessage(message.getBebBroadcast().getMessage())
-                                        .build())
-                                .build()
-                );
-                break;
-            default:
-                break;
-        }
+        Process.systems.get(systemId).eventsQueue.add(
+                Message.newBuilder()
+                        .setType(Message.Type.BEB_DELIVER)
+                        .setAbstractionId(message.getAbstractionId())
+                        .setSystemId(systemId)
+                        .setBebDeliver(Consensus.BebDeliver.newBuilder()
+                                .setSender(processFrom)
+                                .setMessage(message)
+                                .build())
+                        .build()
+        );
     }
 
 }

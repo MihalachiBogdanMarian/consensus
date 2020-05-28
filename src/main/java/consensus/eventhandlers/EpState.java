@@ -1,16 +1,18 @@
 package consensus.eventhandlers;
 
+import consensus.protos.Consensus.Value;
+
 public class EpState {
 
     private Integer timestamp;
-    private Integer value;
+    private Value value;
 
     public EpState() {
         this.timestamp = -1;
-        this.value = 0;
+        this.value = Value.newBuilder().setDefined(false).build();
     }
 
-    public EpState(Integer ts, Integer v) {
+    public EpState(Integer ts, Value v) {
         this.timestamp = ts;
         this.value = v;
     }
@@ -23,11 +25,11 @@ public class EpState {
         this.timestamp = ts;
     }
 
-    public Integer getValue() {
+    public Value getValue() {
         return value;
     }
 
-    public void setValue(Integer v) {
+    public void setValue(Value v) {
         this.value = v;
     }
 }

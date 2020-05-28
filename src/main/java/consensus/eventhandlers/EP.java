@@ -4,6 +4,7 @@ import consensus.network.process.Process;
 import consensus.protos.Consensus;
 import consensus.protos.Consensus.ProcessId;
 import consensus.protos.Consensus.Message;
+import consensus.protos.Consensus.Value;
 import consensus.utilities.Utilities;
 
 import java.util.HashMap;
@@ -15,8 +16,8 @@ public class EP extends AbstractAlgorithm {
     private ProcessId l;
 
     private static Integer valts;
-    private static Integer val;
-    private static Integer tmpval;
+    private static Value val;
+    private static Value tmpval;
     private static Map<ProcessId, EpState> states;
     private static Integer accepted;
     private static boolean aborted;
@@ -30,48 +31,32 @@ public class EP extends AbstractAlgorithm {
     @Override
     public boolean handle(Message message) {
         switch (message.getType()) {
-            case EP_INIT:
-                if (Integer.parseInt(message.getAbstractionId()) == ts) {
-                    init(Integer.parseInt(message.getSystemId())
-                            , new EpState(message.getEpInit().getValueTimestamp(), message.getEpInit().getValue()));
-                    return true;
-                }
-                return false;
             case EP_PROPOSE:
-                if (Integer.parseInt(message.getAbstractionId()) == ts) {
-                    propose(Integer.parseInt(message.getSystemId()),
+                if (message.getAbstractionId().equals("ep" + ts)) {
+                    propose(message.getSystemId(),
                             message.getEpPropose().getValue());
                     return true;
                 }
                 return false;
             case BEB_DELIVER:
-                if (message.getBebDeliver().getMessage().getType().equals(Message.Type.EP_READ_) ||
-                        message.getBebDeliver().getMessage().getType().equals(Message.Type.EP_WRITE_) ||
-                        message.getBebDeliver().getMessage().getType().equals(Message.Type.EP_DECIDED_)) {
-                    if (Integer.parseInt(message.getBebDeliver().getMessage().getAbstractionId()) == ts) {
-                        bebDeliver(Integer.valueOf(message.getSystemId()),
-                                message.getBebDeliver().getSender(),
-                                message.getBebDeliver().getMessage());
-                        return true;
-                    }
-                    return false;
+                if (message.getAbstractionId().equals("ep" + ts)) {
+                    bebDeliver(message.getSystemId(),
+                            message.getBebDeliver().getSender(),
+                            message.getBebDeliver().getMessage());
+                    return true;
                 }
                 return false;
             case PL_DELIVER:
-                if (message.getPlDeliver().getMessage().getType().equals(Message.Type.EP_STATE_) ||
-                        message.getPlDeliver().getMessage().getType().equals(Message.Type.EP_ACCEPT_)) {
-                    if (Integer.parseInt(message.getPlDeliver().getMessage().getAbstractionId()) == ts) {
-                        plDeliver(Integer.valueOf(message.getSystemId()),
-                                message.getPlDeliver().getSender(),
-                                message.getPlDeliver().getMessage());
-                        return true;
-                    }
-                    return false;
+                if (message.getAbstractionId().equals("ep" + ts)) {
+                    plDeliver(message.getSystemId(),
+                            message.getPlDeliver().getSender(),
+                            message.getPlDeliver().getMessage());
+                    return true;
                 }
                 return false;
             case EP_ABORT:
-                if (Integer.parseInt(message.getAbstractionId()) == ts) {
-                    abort(Integer.parseInt(message.getSystemId()));
+                if (message.getAbstractionId().equals("ep" + ts)) {
+                    abort(message.getSystemId());
                     return true;
                 }
                 return false;
@@ -82,11 +67,12 @@ public class EP extends AbstractAlgorithm {
         return false;
     }
 
-    private void init(int systemId, EpState state) {
+    @Override
+    public void init(String systemId, EpState state) {
         this.displayExecution(systemId, "EpInit");
         valts = state.getTimestamp();
         val = state.getValue();
-        tmpval = 0;
+        tmpval = Value.newBuilder().setDefined(false).build();
         states = new HashMap<>();
         for (int i = 0; i < Process.processes.size(); i++) {
             states.put(Process.processes.get(i), null);
@@ -95,18 +81,18 @@ public class EP extends AbstractAlgorithm {
         aborted = false;
     }
 
-    private void propose(int systemId, int v) {
-        this.displayExecution(systemId, "EpPropose", v);
+    private void propose(String systemId, Value v) {
+        this.displayExecution(systemId, "EpPropose", v.getV());
         tmpval = v;
-        Process.systems.get(systemId).eventsQueue.insert(
+        Process.systems.get(systemId).eventsQueue.add(
                 Message.newBuilder()
                         .setType(Message.Type.BEB_BROADCAST)
-                        .setSystemId(String.valueOf(systemId))
-                        .setAbstractionId(String.valueOf(ts))
+                        .setSystemId(systemId)
+                        .setAbstractionId("beb")
                         .setBebBroadcast(Consensus.BebBroadcast.newBuilder().setMessage(Message.newBuilder()
                                         .setType(Message.Type.EP_READ_)
-                                        .setSystemId(String.valueOf(systemId))
-                                        .setAbstractionId(String.valueOf(ts))
+                                        .setSystemId(systemId)
+                                        .setAbstractionId("ep" + ts)
                                         .setEpRead(Consensus.EpRead_.newBuilder().build())
                                         .build()
                                 ).build()
@@ -114,27 +100,27 @@ public class EP extends AbstractAlgorithm {
         );
     }
 
-    private void bebDeliver(int systemId, ProcessId processFrom, Message message) {
+    private void bebDeliver(String systemId, ProcessId processFrom, Message message) {
         this.displayExecution(systemId, "BebDeliver", processFrom, message);
         switch (message.getType()) {
             case EP_READ_:
                 if (!aborted) {
-                    Process.systems.get(systemId).eventsQueue.insert(
+                    Process.systems.get(systemId).eventsQueue.add(
                             Message.newBuilder()
                                     .setType(Message.Type.PL_SEND)
-                                    .setSystemId(String.valueOf(systemId))
-                                    .setAbstractionId(String.valueOf(ts))
+                                    .setSystemId(systemId)
+                                    .setAbstractionId("ep" + ts)
                                     .setPlSend(Consensus.PlSend.newBuilder()
                                             .setMessage(Message.newBuilder()
                                                     .setType(Message.Type.EP_STATE_)
-                                                    .setSystemId(String.valueOf(systemId))
-                                                    .setAbstractionId(String.valueOf(ts))
+                                                    .setSystemId(systemId)
+                                                    .setAbstractionId("ep" + ts)
                                                     .setEpState(Consensus.EpState_.newBuilder()
                                                             .setValueTimestamp(valts)
                                                             .setValue(val)
                                                             .build())
                                                     .build())
-                                            .setReceiver(processFrom)
+                                            .setDestination(processFrom)
                                             .build())
                                     .build()
                     );
@@ -142,22 +128,22 @@ public class EP extends AbstractAlgorithm {
                 break;
             case EP_WRITE_:
                 if (!aborted) {
-                    valts = ts;
+                    valts = Integer.parseInt(message.getAbstractionId().split("ep")[1]);
                     val = message.getEpWrite().getValue();
-                    Process.systems.get(systemId).eventsQueue.insert(
+                    Process.systems.get(systemId).eventsQueue.add(
                             Message.newBuilder()
                                     .setType(Message.Type.PL_SEND)
-                                    .setSystemId(String.valueOf(systemId))
-                                    .setAbstractionId(String.valueOf(ts))
+                                    .setSystemId(systemId)
+                                    .setAbstractionId("ep" + ts)
                                     .setPlSend(Consensus.PlSend.newBuilder()
                                             .setMessage(Message.newBuilder()
                                                     .setType(Message.Type.EP_ACCEPT_)
-                                                    .setSystemId(String.valueOf(systemId))
-                                                    .setAbstractionId(String.valueOf(ts))
+                                                    .setSystemId(systemId)
+                                                    .setAbstractionId("ep" + ts)
                                                     .setEpAccept(Consensus.EpAccept_.newBuilder()
                                                             .build())
                                                     .build())
-                                            .setReceiver(processFrom)
+                                            .setDestination(processFrom)
                                             .build())
                                     .build()
                     );
@@ -165,12 +151,13 @@ public class EP extends AbstractAlgorithm {
                 break;
             case EP_DECIDED_:
                 if (!aborted) {
-                    Process.systems.get(systemId).eventsQueue.insert(
+                    Process.systems.get(systemId).eventsQueue.add(
                             Message.newBuilder()
                                     .setType(Message.Type.EP_DECIDE)
-                                    .setSystemId(String.valueOf(systemId))
-                                    .setAbstractionId(String.valueOf(ts))
+                                    .setSystemId(systemId)
+                                    .setAbstractionId("uc")
                                     .setEpDecide(Consensus.EpDecide.newBuilder()
+                                            .setEts(ts)
                                             .setValue(message.getEpDecided().getValue())
                                             .build())
                                     .build()
@@ -182,7 +169,7 @@ public class EP extends AbstractAlgorithm {
         }
     }
 
-    private void plDeliver(int systemId, ProcessId processFrom, Message message) {
+    private void plDeliver(String systemId, ProcessId processFrom, Message message) {
         this.displayExecution(systemId, "PlDeliver", processFrom, message);
         switch (message.getType()) {
             case EP_STATE_:
@@ -192,7 +179,7 @@ public class EP extends AbstractAlgorithm {
                     if (Utilities.hashtag(states) > Process.processes.size() / 2) {
                         EpState epState = Utilities.highest(states);
 
-                        if (epState.getValue() != 0) {
+                        if (epState.getValue().getDefined()) {
                             tmpval = epState.getValue();
                         }
 
@@ -201,15 +188,15 @@ public class EP extends AbstractAlgorithm {
                             states.put(Process.processes.get(i), null);
                         }
 
-                        Process.systems.get(systemId).eventsQueue.insert(
+                        Process.systems.get(systemId).eventsQueue.add(
                                 Message.newBuilder()
                                         .setType(Message.Type.BEB_BROADCAST)
-                                        .setSystemId(String.valueOf(systemId))
-                                        .setAbstractionId(String.valueOf(ts))
+                                        .setSystemId(systemId)
+                                        .setAbstractionId("beb")
                                         .setBebBroadcast(Consensus.BebBroadcast.newBuilder().setMessage(Message.newBuilder()
                                                         .setType(Message.Type.EP_WRITE_)
-                                                        .setSystemId(String.valueOf(systemId))
-                                                        .setAbstractionId(String.valueOf(ts))
+                                                        .setSystemId(systemId)
+                                                        .setAbstractionId("ep" + ts)
                                                         .setEpWrite(Consensus.EpWrite_.newBuilder().setValue(tmpval).build())
                                                         .build()
                                                 ).build()
@@ -224,15 +211,15 @@ public class EP extends AbstractAlgorithm {
                     if (accepted > Process.processes.size() / 2) {
                         accepted = 0;
 
-                        Process.systems.get(systemId).eventsQueue.insert(
+                        Process.systems.get(systemId).eventsQueue.add(
                                 Message.newBuilder()
                                         .setType(Message.Type.BEB_BROADCAST)
-                                        .setSystemId(String.valueOf(systemId))
-                                        .setAbstractionId(String.valueOf(ts))
+                                        .setSystemId(systemId)
+                                        .setAbstractionId("beb")
                                         .setBebBroadcast(Consensus.BebBroadcast.newBuilder().setMessage(Message.newBuilder()
                                                         .setType(Message.Type.EP_DECIDED_)
-                                                        .setSystemId(String.valueOf(systemId))
-                                                        .setAbstractionId(String.valueOf(ts))
+                                                        .setSystemId(systemId)
+                                                        .setAbstractionId("ep" + ts)
                                                         .setEpDecided(Consensus.EpDecided_.newBuilder().setValue(tmpval).build())
                                                         .build()
                                                 ).build()
@@ -246,15 +233,16 @@ public class EP extends AbstractAlgorithm {
         }
     }
 
-    private void abort(int systemId) {
+    private void abort(String systemId) {
         this.displayExecution(systemId, "EpAbort", ts);
 
-        Process.systems.get(systemId).eventsQueue.insert(
+        Process.systems.get(systemId).eventsQueue.add(
                 Message.newBuilder()
                         .setType(Message.Type.EP_ABORTED)
-                        .setSystemId(String.valueOf(systemId))
-                        .setAbstractionId(String.valueOf(ts))
+                        .setSystemId(systemId)
+                        .setAbstractionId("ep" + ts)
                         .setEpAborted(Consensus.EpAborted.newBuilder()
+                                .setEts(ts)
                                 .setValueTimestamp(valts)
                                 .setValue(val)
                                 .build())
