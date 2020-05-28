@@ -16,16 +16,18 @@ public class PL extends AbstractAlgorithm {
 
     @Override
     public boolean handle(Message message) {
-        switch (message.getType()) {
-            case PL_SEND:
-                send(message.getSystemId(),
-                        message.getAbstractionId(),
-                        message.getPlSend().getDestination().getHost(),
-                        message.getPlSend().getDestination().getPort(),
-                        message.getPlSend().getMessage());
-                return true;
-            default:
-                break;
+        if (message.getSystemId().equals(Process.currentSystem)) {
+            switch (message.getType()) {
+                case PL_SEND:
+                    send(message.getSystemId(),
+                            message.getAbstractionId(),
+                            message.getPlSend().getDestination().getHost(),
+                            message.getPlSend().getDestination().getPort(),
+                            message.getPlSend().getMessage());
+                    return true;
+                default:
+                    break;
+            }
         }
         return false;
     }

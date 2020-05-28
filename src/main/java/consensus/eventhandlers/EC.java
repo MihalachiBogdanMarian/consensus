@@ -17,29 +17,31 @@ public class EC extends AbstractAlgorithm {
 
     @Override
     public boolean handle(Message message) {
-        switch (message.getType()) {
-            case ELD_TRUST:
-                omegaTrust(message.getSystemId(),
-                        message.getEldTrust().getProcess());
-                return true;
-            case BEB_DELIVER:
-                if (message.getAbstractionId().equals("ec")) {
-                    bebDeliver(message.getSystemId(),
-                            message.getBebDeliver().getSender(),
-                            message.getBebDeliver().getMessage());
+        if (message.getSystemId().equals(Process.currentSystem)) {
+            switch (message.getType()) {
+                case ELD_TRUST:
+                    omegaTrust(message.getSystemId(),
+                            message.getEldTrust().getProcess());
                     return true;
-                }
-                return false;
-            case PL_DELIVER:
-                if (message.getAbstractionId().equals("ec")) {
-                    plDeliver(message.getSystemId(),
-                            message.getPlDeliver().getSender(),
-                            message.getPlDeliver().getMessage());
-                    return true;
-                }
-                return false;
-            default:
-                break;
+                case BEB_DELIVER:
+                    if (message.getAbstractionId().equals("ec")) {
+                        bebDeliver(message.getSystemId(),
+                                message.getBebDeliver().getSender(),
+                                message.getBebDeliver().getMessage());
+                        return true;
+                    }
+                    return false;
+                case PL_DELIVER:
+                    if (message.getAbstractionId().equals("ec")) {
+                        plDeliver(message.getSystemId(),
+                                message.getPlDeliver().getSender(),
+                                message.getPlDeliver().getMessage());
+                        return true;
+                    }
+                    return false;
+                default:
+                    break;
+            }
         }
         return false;
     }

@@ -19,17 +19,19 @@ public class ELD extends AbstractAlgorithm {
 
     @Override
     public boolean handle(Message message) {
-        switch (message.getType()) {
-            case EPFD_SUSPECT:
-                suspect(message.getSystemId(),
-                        message.getEpfdSuspect().getProcess());
-                return true;
-            case EPFD_RESTORE:
-                restore(message.getSystemId(),
-                        message.getEpfdRestore().getProcess());
-                return true;
-            default:
-                break;
+        if (message.getSystemId().equals(Process.currentSystem)) {
+            switch (message.getType()) {
+                case EPFD_SUSPECT:
+                    suspect(message.getSystemId(),
+                            message.getEpfdSuspect().getProcess());
+                    return true;
+                case EPFD_RESTORE:
+                    restore(message.getSystemId(),
+                            message.getEpfdRestore().getProcess());
+                    return true;
+                default:
+                    break;
+            }
         }
         return false;
     }

@@ -13,21 +13,23 @@ public class BEB extends AbstractAlgorithm {
 
     @Override
     public boolean handle(Message message) {
-        switch (message.getType()) {
-            case BEB_BROADCAST:
-                broadcast(message.getSystemId(),
-                        message.getBebBroadcast().getMessage());
-                return true;
-            case PL_DELIVER:
-                if (message.getAbstractionId().equals("beb")) {
-                    plDeliver(message.getSystemId(),
-                            message.getPlDeliver().getSender(),
-                            message.getPlDeliver().getMessage());
+        if (message.getSystemId().equals(Process.currentSystem)) {
+            switch (message.getType()) {
+                case BEB_BROADCAST:
+                    broadcast(message.getSystemId(),
+                            message.getBebBroadcast().getMessage());
                     return true;
-                }
-                return false;
-            default:
-                break;
+                case PL_DELIVER:
+                    if (message.getAbstractionId().equals("beb")) {
+                        plDeliver(message.getSystemId(),
+                                message.getPlDeliver().getSender(),
+                                message.getPlDeliver().getMessage());
+                        return true;
+                    }
+                    return false;
+                default:
+                    break;
+            }
         }
         return false;
     }
