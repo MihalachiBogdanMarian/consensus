@@ -27,8 +27,35 @@ public class UC extends AbstractAlgorithm {
     }
 
     @Override
+    public boolean match(Message message) {
+        if (message != null && message.getSystemId().equals(Process.currentSystem)) {
+            switch (message.getType()) {
+                case UC_PROPOSE:
+                case UC_DECIDE:
+                case EC_START_EPOCH:
+                    return true;
+                case EP_ABORTED:
+                    if (message.getEpAborted().getEts() == ets) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                case EP_DECIDE:
+                    if (message.getEpDecide().getEts() == ets) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                default:
+                    break;
+            }
+        }
+        return false;
+    }
+
+    @Override
     public boolean handle(Message message) {
-        if (message.getSystemId().equals(Process.currentSystem)) {
+        if (message != null && message.getSystemId().equals(Process.currentSystem)) {
             switch (message.getType()) {
                 case UC_PROPOSE:
                     propose(message.getSystemId(),

@@ -22,6 +22,11 @@ public interface Algorithm {
         return true;
     }
 
+    default boolean match(Message message) {
+        System.out.println(this.getClass().toString() + " matched message: " + message.toString());
+        return true;
+    }
+
     default void displayExecution(String systemId, String methodName) {
         synchronized (System.out) {
             System.out.println("SYSTEM " + systemId + ": " + this.getName() + "." + methodName + " executing...");
