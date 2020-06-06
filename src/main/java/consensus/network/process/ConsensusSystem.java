@@ -27,16 +27,22 @@ public class ConsensusSystem {
     }
 
     public void eventLoop() {
-        boolean b;
+        boolean b1 = false;
+        String algoritm = null;
         List<Message> eventsQueueCopy = new ArrayList<>(eventsQueue);
         Map<String, AbstractAlgorithm> algorithmsCopy = new HashMap<>(algorithms);
         if (!eventsQueueCopy.isEmpty()) {
             for (Message message : eventsQueueCopy) {
                 for (Map.Entry<String, AbstractAlgorithm> entry : algorithmsCopy.entrySet()) {
-                    b = entry.getValue().handle(message);
-                    if (b) {
-                        eventsQueue.remove(message);
+                    boolean b2 = entry.getValue().match(message);
+                    if (b2) {
+                        algoritm = entry.getKey();
                     }
+                    b1 |= b2;
+                }
+                if (b1) {
+                    algorithmsCopy.get(algoritm).handle(message);
+                    eventsQueue.remove(message);
                 }
             }
         }

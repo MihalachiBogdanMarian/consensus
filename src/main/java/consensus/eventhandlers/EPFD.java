@@ -20,6 +20,24 @@ public class EPFD extends AbstractAlgorithm {
     }
 
     @Override
+    public boolean match(Message message) {
+        if (message != null && message.getSystemId().equals(Process.currentSystem)) {
+            switch (message.getType()) {
+                case EPFD_TIMEOUT:
+                    return true;
+                case PL_DELIVER:
+                    if (message.getAbstractionId().equals("epfd")) {
+                        return true;
+                    }
+                    return false;
+                default:
+                    break;
+            }
+        }
+        return false;
+    }
+
+    @Override
     public boolean handle(Message message) {
         if (message != null && message.getSystemId().equals(Process.currentSystem)) {
             switch (message.getType()) {

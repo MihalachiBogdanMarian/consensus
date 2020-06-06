@@ -16,8 +16,27 @@ public class EC extends AbstractAlgorithm {
     }
 
     @Override
+    public boolean match(Message message) {
+        if (message != null && message.getSystemId().equals(Process.currentSystem)) {
+            switch (message.getType()) {
+                case ELD_TRUST:
+                    return true;
+                case BEB_DELIVER:
+                case PL_DELIVER:
+                    if (message.getAbstractionId().equals("ec")) {
+                        return true;
+                    }
+                    return false;
+                default:
+                    break;
+            }
+        }
+        return false;
+    }
+
+    @Override
     public boolean handle(Message message) {
-        if (message.getSystemId().equals(Process.currentSystem)) {
+        if (message != null && message.getSystemId().equals(Process.currentSystem)) {
             switch (message.getType()) {
                 case ELD_TRUST:
                     omegaTrust(message.getSystemId(),
